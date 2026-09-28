@@ -1,12 +1,8 @@
 import "server-only";
-import { unstable_cache } from "next/cache";
+import { cache } from "react";
 import { asc, eq } from "drizzle-orm";
 import { db, schema } from "./db";
-import { DEFAULT_PRODUCTS, DEFAULT_DELIVERY_ZONES } from "@/config/catalog";
-import { DEFAULT_SETTINGS } from "@/config/business";
 import type { ZoneRule } from "./delivery";
-
-export const CACHE_TAGS = { catalog: "catalog", settings: "settings" } as const;
 
 export type PublicProduct = {
   id: string;
@@ -20,70 +16,92 @@ export type PublicProduct = {
   accent: string;
 };
 
-export type PublicSettings = typeof DEFAULT_SETTINGS;
+export type PublicSettings = {
+  phoneDisplay: string;
+  phoneE164: string;
+  contactEmail: string | null;
+  addressLine: string | null;
+  openingHours: string | null;
+  standLocation: string | null;
+  payLaterEnabled: boolean;
+  collectionEnabled: boolean;
+  collectionInstructions: string | null;
+  announcement: string | null;
+};
 
 /**
- * Public reads of products / zones / settings. Cached and tagged, so an
- * admin edit refreshes every page straight away — no rebuild needed.
- *
- * If the database is unreachable the site still renders from the config
- * defaults, but checkout always re-reads the database and will refuse to
- * take an order without it.
+ * Thrown when products, delivery zones or settings can't be read from the
+ * database. There is deliberately NO fallback to the defaults in /config:
+ * showing those could present out-of-date prices as if they were live.
+ * Pages that show prices or take orders render an "unavailable" state instead.
  */
-export const getActiveProducts = unstable_cache(
-  async (): Promise<PublicProduct[]> => {
-    try {
-      const p = schema.products;
-      return await db
-        .select({
-          id: p.id,
-          name: p.name,
-          shortDescription: p.shortDescription,
-          unitLabel: p.unitLabel,
-          sizeLabel: p.sizeLabel,
-          pricePence: p.pricePence,
-          image: p.image,
-          visual: p.visual,
-          accent: p.accent,
-        })
-        .from(p)
-        .where(eq(p.active, true))
-        .orderBy(asc(p.sortOrder));
-    } catch (e) {
-      console.error("[catalog] DB unavailable, using config defaults", e);
-      return DEFAULT_PRODUCTS.filter((p) => p.active).map((p) => ({ ...p, image: p.image ?? null }));
-    }
-  },
-  ["active-products"],
-  { tags: [CACHE_TAGS.catalog], revalidate: 3600 },
-);
+export class CatalogUnavailableError extends Error {
+  constructor(what: string, cause?: unknown) {
+    super(`Catalogue unavailable: could not read ${what}`, { cause });
+    this.name = "CatalogUnavailableError";
+  }
+}
 
-export const getDeliveryZones = unstable_cache(
-  async (): Promise<ZoneRule[]> => {
-    try {
-      return await db.select().from(schema.deliveryZones).orderBy(asc(schema.deliveryZones.sortOrder));
-    } catch (e) {
-      console.error("[catalog] DB unavailable, using default zones", e);
-      return DEFAULT_DELIVERY_ZONES;
-    }
-  },
-  ["delivery-zones"],
-  { tags: [CACHE_TAGS.catalog], revalidate: 3600 },
-);
+async function read<T>(what: string, q: () => Promise<T>): Promise<T> {
+  try {
+    return await q();
+  } catch (e) {
+    console.error(`[catalog] database unavailable reading ${what}:`, (e as Error).message);
+    throw new CatalogUnavailableError(what, e);
+  }
+}
 
-export const getSettings = unstable_cache(
-  async (): Promise<PublicSettings> => {
-    try {
-      const [s] = await db.select().from(schema.siteSettings).where(eq(schema.siteSettings.id, 1));
-      if (s) {
-        const { id: _id, createdAt: _c, updatedAt: _u, ...rest } = s;
-        return rest;
-      }
-    } catch (e) {
-      console.error("[catalog] DB unavailable, using default settings", e);
-    }
-    return DEFAULT_SETTINGS;
-  },
-  ["site-settings"],
-  { tags: [CACHE_TAGS.settings], revalidate: 3600 },
-);
+function loadProducts(): Promise<PublicProduct[]> {
+  const p = schema.products;
+  return read("products", () =>
+    db
+      .select({
+        id: p.id,
+        name: p.name,
+        shortDescription: p.shortDescription,
+        unitLabel: p.unitLabel,
+        sizeLabel: p.sizeLabel,
+        pricePence: p.pricePence,
+        image: p.image,
+        visual: p.visual,
+        accent: p.accent,
+      })
+      .from(p)
+      .where(eq(p.active, true))
+      .orderBy(asc(p.sortOrder)),
+  );
+}
+
+function loadZones(): Promise<ZoneRule[]> {
+  return read("delivery zones", () => db.select().from(schema.deliveryZones).orderBy(asc(schema.deliveryZones.sortOrder)));
+}
+
+async function loadSettings(): Promise<PublicSettings> {
+  const [s] = await read("settings", () => db.select().from(schema.siteSettings).where(eq(schema.siteSettings.id, 1)));
+  if (!s) throw new CatalogUnavailableError("settings (row missing — run `npm run db:seed`)");
+  const { id: _id, createdAt: _c, updatedAt: _u, ...rest } = s;
+  return rest;
+}
+
+/**
+ * Public reads. Deliberately NOT kept in Next's persistent data cache: a
+ * cached copy can outlive a price change and be baked into the next build.
+ * Instead the database is read whenever a page is rendered — at build, and on
+ * each ISR regeneration (hourly, or immediately after an admin edit, which
+ * revalidates every page). If a read fails the render fails: Next.js keeps
+ * serving the last page it rendered from the database, and pages that take
+ * orders show the "unavailable" state. `cache` only de-duplicates the reads
+ * within a single render.
+ */
+export const getActiveProducts = cache(loadProducts);
+export const getDeliveryZones = cache(loadZones);
+export const getSettings = cache(loadSettings);
+
+/**
+ * For the basket and checkout (rendered on every request), so the customer
+ * only ever proceeds towards an order when the database is answering now.
+ */
+export async function getLiveCatalog(): Promise<{ products: PublicProduct[]; zones: ZoneRule[]; settings: PublicSettings }> {
+  const [products, zones, settings] = await Promise.all([getActiveProducts(), getDeliveryZones(), getSettings()]);
+  return { products, zones, settings };
+}

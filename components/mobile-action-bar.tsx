@@ -17,14 +17,15 @@ export function MobileActionBar({
 }: {
   phoneE164: string;
   phoneDisplay: string;
-  prices: Record<string, number>;
+  /** null when live prices couldn't be loaded — then no total is shown. */
+  prices: Record<string, number> | null;
 }) {
   const pathname = usePathname();
   const b = useBasket();
   const count = basketCount(b);
   if (pathname.startsWith("/basket") || pathname.startsWith("/checkout") || pathname.startsWith("/order")) return null;
 
-  const subtotal = Object.entries(b).reduce((s, [id, q]) => s + (prices[id] ?? 0) * q, 0);
+  const subtotal = prices ? Object.entries(b).reduce((s, [id, q]) => s + (prices[id] ?? 0) * q, 0) : null;
 
   return (
     <div className="bg-char-900/97 fixed inset-x-0 bottom-0 z-40 border-t border-black/20 px-3 pt-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] shadow-[0_-8px_24px_rgba(0,0,0,.25)] md:hidden">
@@ -41,9 +42,9 @@ export function MobileActionBar({
           <Link
             href="/basket"
             className="btn btn-primary min-h-12 px-2"
-            aria-label={`Basket, ${count} items, ${formatPenceShort(subtotal)}`}
+            aria-label={`Basket, ${count} items${subtotal !== null ? `, ${formatPenceShort(subtotal)}` : ""}`}
           >
-            <BasketIcon className="h-5 w-5" />({count}) · {formatPenceShort(subtotal)}
+            <BasketIcon className="h-5 w-5" />({count}){subtotal !== null && ` · ${formatPenceShort(subtotal)}`}
           </Link>
         ) : (
           <Link href="/shop" className="btn btn-primary min-h-12 px-2">

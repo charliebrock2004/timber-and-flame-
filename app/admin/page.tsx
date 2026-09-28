@@ -98,12 +98,18 @@ export default async function OrdersPage(props: PageProps<"/admin">) {
               {rows.map((r) => (
                 <tr key={r.id} className="hover:bg-white">
                   <td className="px-4 py-3">
-                    <Link href={`/admin/orders/${r.id}`} className="text-ember-700 font-semibold underline underline-offset-2">
+                    <Link
+                      href={`/admin/orders/${r.id}`}
+                      className="text-ember-700 font-semibold whitespace-nowrap underline underline-offset-2"
+                    >
                       {r.orderNumber}
                     </Link>
-                    {r.ownerNotifiedAt && !r.ownerEmailSentAt && (
-                      <div className="text-ember-700 text-xs font-semibold" title="The email to you wasn't sent — open the order to resend">
+                    {r.ownerNotifiedAt && (!r.ownerEmailSentAt || !r.customerEmailSentAt) && (
+                      <div className="text-ember-700 text-xs font-semibold" title="Open the order to resend">
                         Email not sent
+                        <span className="block font-normal">
+                          {[!r.ownerEmailSentAt && "to you", !r.customerEmailSentAt && "to customer"].filter(Boolean).join(" · ")}
+                        </span>
                       </div>
                     )}
                   </td>

@@ -2,15 +2,14 @@
 
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
-import { revalidatePath, updateTag } from "next/cache";
+import { revalidatePath } from "next/cache";
 import { eq } from "drizzle-orm";
 import { z } from "zod";
 import { db, schema } from "@/lib/db";
 import { checkCredentials, endSession, isAdminConfigured, requireAdmin, startSession } from "@/lib/auth";
 import { clientIp, rateLimit } from "@/lib/rate-limit";
 import { parsePoundsToPence } from "@/lib/money";
-import { CACHE_TAGS } from "@/lib/catalog";
-import { resendOwnerNotification } from "@/lib/orders";
+import { resendOrderEmail } from "@/lib/orders";
 
 export type ActionState = { ok?: boolean; error?: string; message?: string };
 
@@ -91,11 +90,16 @@ export async function updateOrderAction(_prev: ActionState, form: FormData): Pro
 
 export async function resendOrderEmailAction(_prev: ActionState, form: FormData): Promise<ActionState> {
   await requireAdmin();
-  const id = z.uuid().safeParse(form.get("id"));
-  if (!id.success) return { error: "Invalid order." };
-  const ok = await resendOwnerNotification(id.data);
-  revalidatePath(`/admin/orders/${id.data}`);
-  return ok ? { ok: true, message: "Order email sent." } : { error: "Couldn't send the email — check the email settings (see README)." };
+  const parsed = z
+    .object({ id: z.uuid(), which: z.enum(["owner", "customer"]) })
+    .safeParse({ id: form.get("id"), which: form.get("which") });
+  if (!parsed.success) return { error: "Invalid order." };
+  const { id, which } = parsed.data;
+  const ok = await resendOrderEmail(id, which);
+  revalidatePath(`/admin/orders/${id}`);
+  revalidatePath("/admin");
+  const label = which === "owner" ? "Order email to you" : "Confirmation to the customer";
+  return ok ? { ok: true, message: `${label} sent.` } : { error: "Couldn't send the email — check the email settings (see README)." };
 }
 
 /* ───────────── Products ───────────── */
@@ -225,7 +229,5 @@ export async function updateSettingsAction(_prev: ActionState, form: FormData): 
 
 /** Make public pages show the change immediately — no rebuild. */
 function refreshPublic() {
-  updateTag(CACHE_TAGS.catalog);
-  updateTag(CACHE_TAGS.settings);
   revalidatePath("/", "layout");
 }

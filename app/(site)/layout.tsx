@@ -1,12 +1,19 @@
 import { Header } from "@/components/header";
 import { Footer } from "@/components/footer";
 import { MobileActionBar } from "@/components/mobile-action-bar";
-import { getActiveProducts, getSettings } from "@/lib/catalog";
+import { getActiveProducts, getSettings, type PublicSettings } from "@/lib/catalog";
 import { jsonLdScript, localBusinessJsonLd } from "@/lib/seo";
+import { DEFAULT_SETTINGS } from "@/config/business";
 
 export default async function SiteLayout({ children }: LayoutProps<"/">) {
-  const [settings, products] = await Promise.all([getSettings(), getActiveProducts()]);
-  const prices = Object.fromEntries(products.map((p) => [p.id, p.pricePence]));
+  // The header and footer must still render if the database is down, so the
+  // page's own "unavailable" message shows with a way to phone. They fall back
+  // to the business contact details only — never to prices: with no live
+  // products, the basket bar shows no totals and structured data lists no offers.
+  const [s, p] = await Promise.allSettled([getSettings(), getActiveProducts()]);
+  const settings: PublicSettings = s.status === "fulfilled" ? s.value : { ...DEFAULT_SETTINGS, announcement: null };
+  const products = p.status === "fulfilled" ? p.value : [];
+  const prices = p.status === "fulfilled" ? Object.fromEntries(products.map((x) => [x.id, x.pricePence])) : null;
 
   return (
     <>

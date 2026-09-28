@@ -87,7 +87,7 @@ export default async function AdminOrderPage(props: PageProps<"/admin/orders/[id
                   <td className="py-2">
                     {i.quantity} × {i.productName}
                   </td>
-                  <td className="text-ink-soft py-2 text-right">@ {formatPence(i.unitPricePence)}</td>
+                  <td className="text-ink-soft py-2 text-right whitespace-nowrap">@ {formatPence(i.unitPricePence)}</td>
                   <td className="py-2 text-right">{formatPence(i.lineTotalPence)}</td>
                 </tr>
               ))}
@@ -197,22 +197,53 @@ export default async function AdminOrderPage(props: PageProps<"/admin/orders/[id
 
       <section className="bg-cream-50 shadow-card ring-ink/5 mt-6 rounded-xl p-5 ring-1">
         <h2 className="text-2xl font-bold">Emails</h2>
-        <dl className="mt-3 grid grid-cols-[auto_1fr] gap-x-4 gap-y-1 text-sm">
-          <dt className="font-semibold">Order email to you</dt>
-          <dd className={!order.ownerEmailSentAt ? "text-ember-700 font-semibold" : ""}>
-            {order.ownerEmailSentAt ? `Sent ${fmtDate(order.ownerEmailSentAt)}` : order.ownerNotifiedAt ? "Not sent" : "—"}
-          </dd>
-          <dt className="font-semibold">Confirmation to customer</dt>
-          <dd>{order.customerEmailSentAt ? `Sent ${fmtDate(order.customerEmailSentAt)}` : order.ownerNotifiedAt ? "Not sent" : "—"}</dd>
-        </dl>
-        {emailProvider() ? (
-          <ActionForm action={resendOrderEmailAction} submitLabel="Resend order email to me" className="mt-2">
-            <input type="hidden" name="id" value={order.id} />
-          </ActionForm>
-        ) : (
+        {!emailProvider() && (
           <p className="bg-amber/15 mt-3 rounded-lg p-3 text-sm">Email isn&apos;t set up yet, so nothing can be sent. See the README.</p>
         )}
+        <div className="mt-3 grid gap-4 sm:grid-cols-2">
+          <EmailStatus
+            label="Order email to you"
+            sentAt={order.ownerEmailSentAt}
+            attempted={Boolean(order.ownerNotifiedAt)}
+            orderId={order.id}
+            which="owner"
+            canSend={Boolean(emailProvider())}
+          />
+          <EmailStatus
+            label={`Confirmation to customer (${order.email})`}
+            sentAt={order.customerEmailSentAt}
+            attempted={Boolean(order.ownerNotifiedAt)}
+            orderId={order.id}
+            which="customer"
+            canSend={Boolean(emailProvider())}
+          />
+        </div>
       </section>
+    </div>
+  );
+}
+
+function EmailStatus(props: {
+  label: string;
+  sentAt: Date | null;
+  attempted: boolean;
+  orderId: string;
+  which: "owner" | "customer";
+  canSend: boolean;
+}) {
+  const failed = !props.sentAt;
+  return (
+    <div className={`rounded-lg p-4 ring-1 ${failed ? "bg-ember-700/5 ring-ember-700/30" : "ring-ink/10 bg-white"}`}>
+      <p className="font-semibold break-words">{props.label}</p>
+      <p className={failed ? "text-ember-700 font-semibold" : "text-moss font-semibold"}>
+        {props.sentAt ? `Sent ${fmtDate(props.sentAt)}` : props.attempted ? "Email not sent" : "Not sent yet"}
+      </p>
+      {props.canSend && (
+        <ActionForm action={resendOrderEmailAction} submitLabel={props.sentAt ? "Send again" : "Resend email"} className="mt-1">
+          <input type="hidden" name="id" value={props.orderId} />
+          <input type="hidden" name="which" value={props.which} />
+        </ActionForm>
+      )}
     </div>
   );
 }

@@ -4,7 +4,7 @@ import type { OrderWithItems } from "@/db/schema";
 import { formatPence } from "./money";
 import { BRAND } from "@/config/business";
 import { siteUrl } from "./site";
-import { deliveryKind, deliveryLineValue, deliveryStatusText, formatOrderDate } from "./order-format";
+import { deliveryKind, deliveryLineValue, deliveryStatusText, formatOrderDate, STATUS_LABELS } from "./order-format";
 
 /* ─────────────────────────── Transport ───────────────────────────
  * Configure ONE of these (checked in this order):
@@ -177,6 +177,9 @@ export function ownerEmail(o: OrderWithItems, to: string): Mail {
     "",
     "PAYMENT STATUS:",
     paymentText(o),
+    "",
+    "ORDER STATUS:",
+    STATUS_LABELS[o.status],
     ...(o.notes ? ["", "CUSTOMER NOTES:", o.notes] : []),
     "",
     `Manage this order: ${siteUrl()}/admin/orders/${o.id}`,
@@ -195,6 +198,8 @@ ${h("Delivery status")}
 <p style="margin:0;font-weight:bold">${esc(deliveryStatusText(o))}</p>
 ${h("Payment status")}
 <p style="margin:0;font-weight:bold">${esc(paymentText(o))}</p>
+${h("Order status")}
+<p style="margin:0;font-weight:bold">${esc(STATUS_LABELS[o.status])}</p>
 ${o.notes ? `${h("Customer notes")}<p style="margin:0;white-space:pre-line">${esc(o.notes)}</p>` : ""}
 <p style="margin-top:20px"><a href="${siteUrl()}/admin/orders/${o.id}" style="background:#7e1e24;color:#fff;padding:10px 16px;border-radius:6px;text-decoration:none;font-weight:bold">Manage this order</a></p>`);
 
@@ -204,7 +209,7 @@ ${o.notes ? `${h("Customer notes")}<p style="margin:0;white-space:pre-line">${es
 /** Customer confirmation. Never says the order has been paid unless it has. */
 export function customerEmail(o: OrderWithItems, phoneDisplay: string, businessEmail: string | null): Mail {
   const a = addressLines(o);
-  const received = "Your order has been received. Timber & Flame will contact you regarding delivery and payment arrangements.";
+  const received = "Your order has been received. Timber & Flame will contact you regarding delivery and payment.";
   const text = [
     `Hi ${o.customerName.split(" ")[0]},`,
     "",

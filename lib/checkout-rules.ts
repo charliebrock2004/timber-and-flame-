@@ -13,6 +13,12 @@ export function normaliseUkPhone(raw: string): string {
   return v;
 }
 
+/**
+ * Email pattern (the same one zod uses for z.email()). This single rule is the
+ * only email check on both the browser and the server, so they always agree.
+ */
+const EMAIL = /^(?!\.)(?!.*\.\.)([A-Za-z0-9_'+\-.]*)[A-Za-z0-9_+-]@([A-Za-z0-9][A-Za-z0-9-]*\.)+[A-Za-z]{2,}$/;
+
 export const rules = {
   customerName(v: string): string | null {
     const t = v.trim();
@@ -30,7 +36,7 @@ export const rules = {
   email(v: string): string | null {
     const t = v.trim();
     if (!t) return "Please enter your email address";
-    if (t.length > 120 || !/^[^\s@]+@[^\s@]+\.[^\s@.]{2,}$/.test(t)) return "Please enter a valid email address, e.g. name@example.com";
+    if (t.length > 120 || !EMAIL.test(t)) return "Please enter a valid email address, e.g. name@example.com";
     return null;
   },
   addressLine1(v: string): string | null {

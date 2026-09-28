@@ -14,10 +14,16 @@ import { formatPenceShort } from "@/lib/money";
 export const revalidate = 3600;
 
 export async function generateMetadata(): Promise<Metadata> {
-  const [products, settings] = await Promise.all([getActiveProducts(), getSettings()]);
-  const prices = products.map((p) => `${p.name.toLowerCase()} ${formatPenceShort(p.pricePence)}`).join(", ");
   const title = "Firewood, Kindling & Road Salt Delivered in Crieff | Timber & Flame Firewood";
-  const description = `Local firewood supplier in Crieff, Perthshire: ${prices} — delivered in Crieff. Order online or call ${settings.phoneDisplay}.`;
+  let description: string;
+  try {
+    const [products, settings] = await Promise.all([getActiveProducts(), getSettings()]);
+    const prices = products.map((p) => `${p.name.toLowerCase()} ${formatPenceShort(p.pricePence)}`).join(", ");
+    description = `Local firewood and logs supplier in Crieff, Perthshire: ${prices} a bag — delivered in Crieff. Order online or call ${settings.phoneDisplay}.`;
+  } catch {
+    // Never put prices in the description unless they came from the database.
+    description = "Local firewood, logs, kindling and road salt supplier in Crieff, Perthshire, with delivery included in Crieff.";
+  }
   return {
     title: { absolute: title },
     description,

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { BasketView } from "@/components/cart/basket-view";
-import { getActiveProducts, getDeliveryZones, getSettings } from "@/lib/catalog";
+import { CatalogUnavailable } from "@/components/unavailable";
+import { CatalogUnavailableError, getLiveCatalog } from "@/lib/catalog";
 
 export const dynamic = "force-dynamic"; // always fresh prices
 
@@ -11,7 +12,15 @@ export const metadata: Metadata = {
 };
 
 export default async function BasketPage(props: PageProps<"/basket">) {
-  const [products, zones, settings, sp] = await Promise.all([getActiveProducts(), getDeliveryZones(), getSettings(), props.searchParams]);
+  const sp = await props.searchParams;
+  let catalog;
+  try {
+    catalog = await getLiveCatalog();
+  } catch (e) {
+    if (e instanceof CatalogUnavailableError) return <CatalogUnavailable />;
+    throw e;
+  }
+  const { products, zones, settings } = catalog;
   return (
     <BasketView
       products={products}

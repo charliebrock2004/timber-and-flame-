@@ -6,7 +6,7 @@ import { getStripe, isStripeConfigured } from "@/lib/stripe";
 import { clientIp, rateLimit } from "@/lib/rate-limit";
 import { db, schema } from "@/lib/db";
 import { siteUrl } from "@/lib/site";
-import { BRAND } from "@/config/business";
+import { BRAND, DEFAULT_SETTINGS } from "@/config/business";
 
 export const runtime = "nodejs";
 
@@ -45,7 +45,14 @@ export async function POST(req: Request) {
     const order = await createOrder(parsed.data, { stripeAvailable });
 
     if (order.paymentMethod === "PAY_LATER") {
-      await notifyOrderPlaced(order.id);
+      // The order is saved. Nothing after this point may report failure to the
+      // customer — they'd retry and place a duplicate. An email problem is
+      // recorded on the order (admin shows "Email not sent" + Resend).
+      try {
+        await notifyOrderPlaced(order.id);
+      } catch (e) {
+        console.error(`[checkout] order ${order.orderNumber} saved but notification step failed`, e);
+      }
       return NextResponse.json({ redirectUrl: `/order/${order.accessToken}` });
     }
 
@@ -97,7 +104,12 @@ export async function POST(req: Request) {
     if (e instanceof CheckoutError) {
       return NextResponse.json({ error: e.message, fields: e.field ? { [e.field]: e.message } : undefined }, { status: 422 });
     }
-    console.error("[checkout] failed", e);
-    return NextResponse.json({ error: "Sorry — something went wrong placing your order. Please try again or call us." }, { status: 500 });
+    console.error("[checkout] failed — no order was saved", e);
+    return NextResponse.json(
+      {
+        error: `Sorry — we can't take orders online right now, so nothing has been ordered. Please try again in a few minutes or call ${DEFAULT_SETTINGS.phoneDisplay}.`,
+      },
+      { status: 503 },
+    );
   }
 }

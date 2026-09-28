@@ -42,3 +42,21 @@ export function deliveryLineValue(o: DeliveryFields): string {
 export function formatOrderDate(d: Date): string {
   return new Intl.DateTimeFormat("en-GB", { dateStyle: "full", timeStyle: "short", timeZone: "Europe/London" }).format(d);
 }
+
+export const STATUS_LABELS = {
+  PENDING: "New",
+  PAID: "Paid",
+  PREPARING: "Preparing",
+  OUT_FOR_DELIVERY: "Out for delivery",
+  COMPLETED: "Completed",
+  CANCELLED: "Cancelled",
+} as const;
+
+export const PAYMENT_LABELS = {
+  UNPAID: "Awaiting payment",
+  AWAITING_PAYMENT: "Awaiting payment",
+  PAID: "Paid",
+  FAILED: "Payment failed",
+  EXPIRED: "Checkout expired",
+  REFUNDED: "Refunded",
+} as const;

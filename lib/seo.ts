@@ -36,24 +36,28 @@ export function localBusinessJsonLd(settings: PublicSettings, products: PublicPr
     ],
     ...(prices.length ? { priceRange: `£${Math.min(...prices)}–£${Math.max(...prices)}` } : {}),
     currenciesAccepted: "GBP",
-    hasOfferCatalog: {
-      "@type": "OfferCatalog",
-      name: "Firewood, kindling and road salt",
-      itemListElement: products.map((p) => ({
-        "@type": "Offer",
-        price: (p.pricePence / 100).toFixed(2),
-        priceCurrency: "GBP",
-        availability: "https://schema.org/InStock",
-        url: `${url}/shop#${p.id}`,
-        description: `${p.unitLabel === "per bag" ? "Per bag" : p.unitLabel}, delivered in Crieff`,
-        areaServed: { "@type": "City", name: "Crieff" },
-        itemOffered: {
-          "@type": "Product",
-          name: p.name,
-          description: p.sizeLabel ? `${p.shortDescription} Bag size ${p.sizeLabel}.` : p.shortDescription,
-        },
-      })),
-    },
+    ...(products.length ? { hasOfferCatalog: offerCatalog(url, products) } : {}),
+  };
+}
+
+function offerCatalog(url: string, products: PublicProduct[]) {
+  return {
+    "@type": "OfferCatalog",
+    name: "Firewood, kindling and road salt",
+    itemListElement: products.map((p) => ({
+      "@type": "Offer",
+      price: (p.pricePence / 100).toFixed(2),
+      priceCurrency: "GBP",
+      availability: "https://schema.org/InStock",
+      url: `${url}/shop#${p.id}`,
+      description: `${p.unitLabel === "per bag" ? "Per bag" : p.unitLabel}, delivered in Crieff`,
+      areaServed: { "@type": "City", name: "Crieff" },
+      itemOffered: {
+        "@type": "Product",
+        name: p.name,
+        description: p.sizeLabel ? `${p.shortDescription} Bag size ${p.sizeLabel}.` : p.shortDescription,
+      },
+    })),
   };
 }
 

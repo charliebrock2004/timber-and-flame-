@@ -87,43 +87,52 @@ export async function createOrder(input: CheckoutInput, opts: { stripeAvailable:
 
   for (let attempt = 0; attempt < 5; attempt++) {
     try {
-      await db.transaction(async (tx) => {
-        await tx.insert(schema.orders).values({
-          id: orderId,
-          orderNumber: newOrderNumber(),
-          accessToken: randomBytes(24).toString("base64url"),
-          customerName: input.customerName,
-          phone: input.phone,
-          email: input.email.toLowerCase(),
-          addressLine1: isDelivery ? input.addressLine1 : null,
-          addressLine2: isDelivery ? input.addressLine2 || null : null,
-          town: isDelivery ? input.town : null,
-          postcode,
-          notes: input.notes || null,
-          fulfilment: input.fulfilment,
-          deliveryZoneId,
-          deliveryZoneName,
-          deliveryChargePence,
-          subtotalPence: quote.subtotalPence,
-          totalPence: quote.totalPence,
-          paymentMethod: input.paymentMethod,
-          // Online payment isn't live: every order starts as awaiting payment.
-          paymentStatus: "AWAITING_PAYMENT",
-          status: "PENDING",
-        });
-        await tx.insert(schema.orderItems).values(
-          quote.lines.map((l) => ({
-            id: randomUUID(),
-            orderId,
-            productId: l.productId,
-            productName: l.name,
-            unitPricePence: l.unitPricePence,
-            quantity: l.quantity,
-            lineTotalPence: l.lineTotalPence,
-          })),
-        );
+      // The saved rows come straight back from the INSERTs, so once the
+      // transaction commits there is no further read that could fail and make
+      // a saved order look like a failed one.
+      return await db.transaction(async (tx) => {
+        const [order] = await tx
+          .insert(schema.orders)
+          .values({
+            id: orderId,
+            orderNumber: newOrderNumber(),
+            accessToken: randomBytes(24).toString("base64url"),
+            customerName: input.customerName,
+            phone: input.phone,
+            email: input.email.toLowerCase(),
+            addressLine1: isDelivery ? input.addressLine1 : null,
+            addressLine2: isDelivery ? input.addressLine2 || null : null,
+            town: isDelivery ? input.town : null,
+            postcode,
+            notes: input.notes || null,
+            fulfilment: input.fulfilment,
+            deliveryZoneId,
+            deliveryZoneName,
+            deliveryChargePence,
+            subtotalPence: quote.subtotalPence,
+            totalPence: quote.totalPence,
+            paymentMethod: input.paymentMethod,
+            // Online payment isn't live: every order starts as awaiting payment.
+            paymentStatus: "AWAITING_PAYMENT",
+            status: "PENDING",
+          })
+          .returning();
+        const items = await tx
+          .insert(schema.orderItems)
+          .values(
+            quote.lines.map((l) => ({
+              id: randomUUID(),
+              orderId,
+              productId: l.productId,
+              productName: l.name,
+              unitPricePence: l.unitPricePence,
+              quantity: l.quantity,
+              lineTotalPence: l.lineTotalPence,
+            })),
+          )
+          .returning();
+        return { ...order, items };
       });
-      return (await getOrderWithItems({ id: orderId }))!;
     } catch (e) {
       // 23505 = unique violation → order-number collision (astronomically rare); retry.
       if ((e as { cause?: { code?: string } }).cause?.code === "23505" || (e as { code?: string }).code === "23505") continue;
@@ -166,35 +175,33 @@ export async function notifyOrderPlaced(orderId: string): Promise<{ owner: boole
   return { owner, customer };
 }
 
-/** Admin "resend" — sends the business notification again (e.g. after fixing email settings). */
-export async function resendOwnerNotification(orderId: string): Promise<boolean> {
+/**
+ * Admin "resend" — sends one of the order emails again (e.g. after fixing the
+ * email settings) and records when it went out.
+ */
+export async function resendOrderEmail(orderId: string, which: "owner" | "customer"): Promise<boolean> {
   const [order, [settings]] = await Promise.all([
     getOrderWithItems({ id: orderId }),
     db.select().from(schema.siteSettings).where(eq(schema.siteSettings.id, 1)),
   ]);
   if (!order) return false;
-  const ok = await sendOwnerNotification(order, settings?.contactEmail ?? null);
-  if (ok) await db.update(schema.orders).set({ ownerEmailSentAt: new Date() }).where(eq(schema.orders.id, orderId));
+  const businessEmail = settings?.contactEmail ?? null;
+  const ok =
+    which === "owner"
+      ? await sendOwnerNotification(order, businessEmail)
+      : await sendCustomerConfirmation(order, settings?.phoneDisplay ?? "", businessEmail);
+  if (ok) {
+    const now = new Date();
+    await db
+      .update(schema.orders)
+      // Also set the claim marker, in case the original attempt never ran.
+      .set(which === "owner" ? { ownerEmailSentAt: now, ownerNotifiedAt: order.ownerNotifiedAt ?? now } : { customerEmailSentAt: now })
+      .where(eq(schema.orders.id, orderId));
+  }
   return ok;
 }
 
 /** Statuses the owner moves an order through (PAID is only set by an online payment). */
 export const WORKFLOW_STATUSES = ["PENDING", "PREPARING", "OUT_FOR_DELIVERY", "COMPLETED", "CANCELLED"] as const;
 
-export const STATUS_LABELS = {
-  PENDING: "New",
-  PAID: "Paid",
-  PREPARING: "Preparing",
-  OUT_FOR_DELIVERY: "Out for delivery",
-  COMPLETED: "Completed",
-  CANCELLED: "Cancelled",
-} as const;
-
-export const PAYMENT_LABELS = {
-  UNPAID: "Awaiting payment",
-  AWAITING_PAYMENT: "Awaiting payment",
-  PAID: "Paid",
-  FAILED: "Payment failed",
-  EXPIRED: "Checkout expired",
-  REFUNDED: "Refunded",
-} as const;
+export { STATUS_LABELS, PAYMENT_LABELS } from "./order-format";

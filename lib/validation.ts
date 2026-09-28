@@ -29,15 +29,7 @@ export const checkoutSchema = z
     paymentMethod: z.enum(["CARD", "PAY_LATER"]).default("PAY_LATER"),
     customerName: ruled(rules.customerName, 80),
     phone: ruled(rules.phone, 20),
-    email: z
-      .string()
-      .max(240)
-      .superRefine((v, ctx) => {
-        const msg =
-          rules.email(v) ?? (z.email().safeParse(v.trim()).success ? null : "Please enter a valid email address, e.g. name@example.com");
-        if (msg) ctx.addIssue({ code: "custom", message: msg });
-      })
-      .transform((v) => v.trim().toLowerCase()),
+    email: ruled(rules.email, 120).transform((v) => v.toLowerCase()),
     addressLine1: z.string().max(240).optional().default(""),
     addressLine2: z.string().trim().max(120).optional().default(""),
     town: z.string().max(120).optional().default(""),
