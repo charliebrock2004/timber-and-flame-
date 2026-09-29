@@ -114,3 +114,11 @@ test("PH7 is only Crieff because the zone config says so", () => {
     null,
   );
 });
+
+test("DATABASE_URL pasted with extras still yields the real connection string", async () => {
+  const { cleanDatabaseUrl } = await import("@/lib/database-url");
+  const url = "postgresql://u:p@ep-x-pooler.c-2.eu-west-2.aws.neon.tech/neondb?sslmode=require&channel_binding=require";
+  for (const v of [url, `psql '${url}'`, `"${url}"`, `DATABASE_URL=${url}`, `DATABASE_URL="${url}"`, `  ${url}\n`])
+    assert.equal(cleanDatabaseUrl(v), url, v);
+  assert.equal(cleanDatabaseUrl(undefined), undefined);
+});

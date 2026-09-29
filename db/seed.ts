@@ -8,12 +8,13 @@
  */
 import { drizzle } from "drizzle-orm/node-postgres";
 import { Pool } from "pg";
+import { cleanDatabaseUrl } from "../lib/database-url";
 import * as schema from "./schema";
 import { DEFAULT_PRODUCTS, DEFAULT_DELIVERY_ZONES } from "../config/catalog";
 import { DEFAULT_SETTINGS } from "../config/business";
 
 const reset = process.argv.includes("--reset");
-const pool = new Pool({ connectionString: process.env.DIRECT_URL || process.env.DATABASE_URL });
+const pool = new Pool({ connectionString: cleanDatabaseUrl(process.env.DIRECT_URL || process.env.DATABASE_URL) });
 const db = drizzle(pool, { schema });
 
 async function main() {
