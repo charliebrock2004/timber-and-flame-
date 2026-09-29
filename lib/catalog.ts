@@ -46,7 +46,13 @@ async function read<T>(what: string, q: () => Promise<T>): Promise<T> {
   try {
     return await q();
   } catch (e) {
-    console.error(`[catalog] database unavailable reading ${what}:`, (e as Error).message);
+    // Drizzle wraps the driver error in "Failed query: <sql>"; the real reason (e.g.
+    // `relation "products" does not exist`, ECONNREFUSED, password authentication
+    // failed) is on .cause, so log that instead of the query text.
+    const cause = (e as { cause?: { message?: string; code?: string } }).cause;
+    console.error(
+      `[catalog] database unavailable reading ${what}: ${cause?.message ?? (e as Error).message}${cause?.code ? ` [${cause.code}]` : ""}`,
+    );
     throw new CatalogUnavailableError(what, e);
   }
 }
