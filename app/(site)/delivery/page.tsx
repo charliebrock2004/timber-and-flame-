@@ -48,7 +48,7 @@ export default async function DeliveryPage() {
             <h2 className="text-3xl font-bold">How it works</h2>
             <ol className="mt-5 space-y-4">
               {[
-                ["Choose your bags", "Add firewood, kindling or road salt to your basket."],
+                ["Choose what you need", "Add firewood, kindling, road salt or a pickup load to your basket."],
                 ["Enter your address", "Your postcode tells us which delivery option applies — you'll see it before you order."],
                 ["Place your order", "You'll get an order number straight away."],
                 ["We get in touch", "Timber & Flame will contact you to arrange your delivery."],

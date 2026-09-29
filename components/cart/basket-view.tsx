@@ -58,7 +58,7 @@ export function BasketView(props: Props) {
     <div className="container-site pt-8 pb-32 md:py-12">
       <CheckoutSteps current={0} />
       <h1 className="mt-5 text-4xl font-bold md:text-5xl">Your basket</h1>
-      <p className="text-ink-soft mt-2">Prices are per bag and include delivery within Crieff.</p>
+      <p className="text-ink-soft mt-2">Prices include delivery within Crieff.</p>
       {props.cancelled && (
         <p role="status" className="bg-amber/15 mt-4 rounded-lg p-4 font-semibold">
           Payment was cancelled — nothing has been charged. Your basket is still here.
@@ -81,7 +81,9 @@ export function BasketView(props: Props) {
                   <div className="min-w-0">
                     <p className="text-lg leading-snug font-semibold">{p.name}</p>
                     {p.sizeLabel && <p className="text-ink-soft text-sm">{p.sizeLabel}</p>}
-                    <p className="text-ink-soft text-sm">{formatPence(l.unitPricePence)} per bag · delivery included in Crieff</p>
+                    <p className="text-ink-soft text-sm">
+                      {formatPence(l.unitPricePence)} {p.unitLabel} · delivery included in Crieff
+                    </p>
                   </div>
                   <div className="col-span-2 flex items-center justify-between gap-3 sm:col-span-1 sm:flex-col sm:items-end">
                     <QuantityStepper value={l.quantity} onChange={(q) => basket.set(l.productId, q)} label={p.name} />
@@ -122,7 +124,7 @@ export function BasketView(props: Props) {
           <dl className="mt-3 space-y-1.5">
             <div className="flex justify-between gap-4">
               <dt>
-                Subtotal ({count} {count === 1 ? "bag" : "bags"})
+                Subtotal ({count} {count === 1 ? "item" : "items"})
               </dt>
               <dd className="font-semibold">{formatPence(quote.subtotalPence)}</dd>
             </div>

@@ -8,6 +8,7 @@ const PRICES = [
   { id: "seasoned-firewood", name: "Seasoned Firewood", pricePence: 1000 },
   { id: "kindling", name: "Netted Bag of Kindling", pricePence: 700 },
   { id: "road-salt", name: "Road Salt", pricePence: 500 },
+  { id: "pickup-load", name: "Pickup Load", pricePence: 12000 },
 ];
 const ZONES: ZoneRule[] = DEFAULT_DELIVERY_ZONES;
 

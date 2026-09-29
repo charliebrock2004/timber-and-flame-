@@ -1,6 +1,7 @@
 import { asc } from "drizzle-orm";
 import { requireAdmin } from "@/lib/auth";
 import { db, schema } from "@/lib/db";
+import { ProductVisual } from "@/components/product-visual";
 import { ActionForm } from "../ui";
 import { updateProductAction } from "../actions";
 
@@ -84,7 +85,28 @@ export default async function AdminProductsPage() {
                   <label className="field-label" htmlFor={`i-${p.id}`}>
                     Photo (optional)
                   </label>
-                  <input id={`i-${p.id}`} name="image" defaultValue={p.image ?? ""} placeholder="/images/kindling.jpg" className="field" />
+                  <div className="flex items-start gap-4">
+                    <div
+                      className="bg-wood-800 relative h-20 w-28 shrink-0 overflow-hidden rounded-lg"
+                      role="img"
+                      aria-label={`Current photo of ${p.name}`}
+                      data-testid={`preview-${p.id}`}
+                    >
+                      <ProductVisual image={p.image} visual={p.visual} name={p.name} sizes="112px" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <input
+                        id={`i-${p.id}`}
+                        name="image"
+                        defaultValue={p.image ?? ""}
+                        placeholder="/images/your-photo.jpg"
+                        className="field"
+                      />
+                      <p className="text-ink-soft mt-1 text-sm">
+                        {p.image ? "Preview of the saved photo." : "No photo set — the shop shows a simple illustration."}
+                      </p>
+                    </div>
+                  </div>
                 </div>
               </div>
               <label className="mt-4 flex items-center gap-3 font-semibold">
@@ -96,7 +118,7 @@ export default async function AdminProductsPage() {
         ))}
       </div>
       <p className="text-ink-soft mt-6 text-sm">
-        Photos: add the file to <code>/public/images</code> and enter its path, e.g. <code>/images/kindling.jpg</code>. Without a photo, a
+        Photos: add the file to <code>/public/images</code> and enter its path, e.g. <code>/images/your-photo.jpg</code>. Without a photo, a
         simple illustration is shown.
       </p>
     </div>

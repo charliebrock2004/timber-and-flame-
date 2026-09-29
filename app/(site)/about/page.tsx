@@ -20,8 +20,8 @@ export const metadata: Metadata = {
 
 const VALUES = [
   ["Local", "We're based in Crieff and supply Crieff and the surrounding area."],
-  ["Straightforward", "A few good products, sold by the bag. Nothing complicated."],
-  ["Honest pricing", "Clear per-bag prices, shown up front, with delivery in Crieff included."],
+  ["Straightforward", "A few good products, sold by the bag or by the load. Nothing complicated."],
+  ["Honest pricing", "Clear prices, shown up front, with delivery in Crieff included."],
   ["Convenient delivery", "Delivered to your door in Crieff, and surrounding areas too."],
   ["Quality firewood", "Quality seasoned firewood supplied in convenient bags."],
 ];
@@ -45,7 +45,7 @@ export default async function AboutPage() {
           </p>
           <p>
             Our motto is on every sign we put up — <em>Quality Wood • Honest Prices</em>. You&apos;ll find us at our honesty stand in
-            Crieff, and now you can order online and have your bags delivered.
+            Crieff, and now you can order online and have your order delivered.
           </p>
           <p>Thank you for supporting a local small business — and keep warm!</p>
         </div>

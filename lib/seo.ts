@@ -50,12 +50,12 @@ function offerCatalog(url: string, products: PublicProduct[]) {
       priceCurrency: "GBP",
       availability: "https://schema.org/InStock",
       url: `${url}/shop#${p.id}`,
-      description: `${p.unitLabel === "per bag" ? "Per bag" : p.unitLabel}, delivered in Crieff`,
+      description: `${p.unitLabel.charAt(0).toUpperCase()}${p.unitLabel.slice(1)}, delivered in Crieff`,
       areaServed: { "@type": "City", name: "Crieff" },
       itemOffered: {
         "@type": "Product",
         name: p.name,
-        description: p.sizeLabel ? `${p.shortDescription} Bag size ${p.sizeLabel}.` : p.shortDescription,
+        description: p.sizeLabel ? `${p.shortDescription} Size ${p.sizeLabel}.` : p.shortDescription,
       },
     })),
   };

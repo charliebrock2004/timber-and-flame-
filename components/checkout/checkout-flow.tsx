@@ -299,7 +299,7 @@ export function CheckoutFlow(props: Props) {
           {step !== 3 && (
             <details className="bg-cream-50 ring-ink/5 mt-4 rounded-xl ring-1 lg:hidden">
               <summary className="flex min-h-12 cursor-pointer items-center justify-between gap-3 px-4 font-semibold">
-                <span>Order summary ({lines.reduce((s, l) => s + l.quantity, 0)} bags)</span>
+                <span>Order summary ({lines.reduce((s, l) => s + l.quantity, 0)} items)</span>
                 <span>{formatPence(quote.subtotalPence)}</span>
               </summary>
               <div className="border-ink/10 border-t px-4 pb-4">
@@ -420,7 +420,7 @@ export function CheckoutFlow(props: Props) {
                   maxLength={500}
                   value={d.notes}
                   onChange={(e) => set("notes", e.target.value)}
-                  placeholder="e.g. where to leave the bags, best time to call"
+                  placeholder="e.g. where to leave your order, best time to call"
                   className="field text-[1.0625rem]"
                 />
               </div>

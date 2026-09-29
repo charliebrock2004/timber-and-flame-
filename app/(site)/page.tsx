@@ -18,8 +18,8 @@ export async function generateMetadata(): Promise<Metadata> {
   let description: string;
   try {
     const [products, settings] = await Promise.all([getActiveProducts(), getSettings()]);
-    const prices = products.map((p) => `${p.name.toLowerCase()} ${formatPenceShort(p.pricePence)}`).join(", ");
-    description = `Local firewood and logs supplier in Crieff, Perthshire: ${prices} a bag — delivered in Crieff. Order online or call ${settings.phoneDisplay}.`;
+    const from = formatPenceShort(Math.min(...products.map((p) => p.pricePence)));
+    description = `Firewood, logs, kindling and road salt delivered in Crieff, Perthshire — from ${from}. Order online or call ${settings.phoneDisplay}.`;
   } catch {
     // Never put prices in the description unless they came from the database.
     description = "Local firewood, logs, kindling and road salt supplier in Crieff, Perthshire, with delivery included in Crieff.";
@@ -34,7 +34,7 @@ export async function generateMetadata(): Promise<Metadata> {
 
 const WHY = [
   { icon: PinIcon, title: "Local", body: "Based in Crieff and supplying Crieff and the surrounding area." },
-  { icon: TagIcon, title: "Honest prices", body: "Clear per-bag prices, shown up front, with delivery in Crieff included." },
+  { icon: TagIcon, title: "Honest prices", body: "Clear prices, shown up front, with delivery in Crieff included." },
   { icon: TruckIcon, title: "Convenient delivery", body: "Delivered to your door in Crieff. Surrounding areas too." },
   { icon: FlameIcon, title: "Quality firewood", body: "Quality seasoned firewood supplied in convenient bags." },
 ];
@@ -113,7 +113,7 @@ export default async function HomePage() {
             </h2>
           </div>
           <p className="text-ink-soft md:text-right">
-            Prices per bag, <strong className="text-ink">delivery in Crieff included.</strong>
+            Prices per bag or per load, <strong className="text-ink">delivery in Crieff included.</strong>
           </p>
         </div>
         <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">

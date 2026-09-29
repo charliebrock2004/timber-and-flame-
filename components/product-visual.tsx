@@ -18,8 +18,14 @@ export function ProductVisual({
   priority?: boolean;
 }) {
   if (image) {
+    // The whole photo is always shown (object-contain), so a tall photo of a bag is never
+    // cropped to a slice. Any spare space is filled with a blurred, tiny copy of the same
+    // photo, so landscape and portrait photos both sit neatly in the same frame.
     return (
-      <Image src={image} alt={`${name} from Timber & Flame, Crieff`} fill sizes={sizes} priority={priority} className="object-cover" />
+      <>
+        <Image src={image} alt="" aria-hidden fill sizes="64px" quality={70} className="scale-125 object-cover opacity-70 blur-xl" />
+        <Image src={image} alt={`${name} from Timber & Flame, Crieff`} fill sizes={sizes} priority={priority} className="object-contain" />
+      </>
     );
   }
   return (

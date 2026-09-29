@@ -43,12 +43,12 @@ export function ProductCard({ product, priority = false }: { product: PublicProd
         <h3 className="label text-ink text-[1.4rem] leading-tight font-semibold tracking-[0.04em]">{product.name}</h3>
         {product.sizeLabel && (
           <p className="label text-ink-soft mt-1 text-base">
-            <span className="sr-only">Bag size: </span>
+            <span className="sr-only">Size: </span>
             {product.sizeLabel}
           </p>
         )}
 
-        {/* Price — per bag, clearly; delivery included in Crieff */}
+        {/* Price — per bag / per load, clearly; delivery included in Crieff */}
         <p className="mt-3 flex items-baseline gap-2">
           <span className="label text-ink text-5xl leading-none font-semibold">{formatPenceShort(product.pricePence)}</span>
           <span className="label text-ink text-xl font-semibold">{product.unitLabel}</span>

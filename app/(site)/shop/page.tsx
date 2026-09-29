@@ -11,7 +11,7 @@ export const revalidate = 3600;
 
 const TITLE = "Buy Firewood, Kindling & Road Salt in Crieff";
 const DESCRIPTION =
-  "Order seasoned firewood, netted bags of kindling and road salt from Timber & Flame in Crieff, Perthshire. Clear per-bag prices with delivery in Crieff included.";
+  "Order seasoned firewood, netted bags of kindling and road salt from Timber & Flame in Crieff, Perthshire. Clear prices with delivery in Crieff included.";
 
 export const metadata: Metadata = {
   title: TITLE,
@@ -29,8 +29,8 @@ export default async function ShopPage() {
           <Eyebrow tone="light">Shop</Eyebrow>
           <h1 className="mt-2 text-4xl font-bold md:text-5xl">Firewood, kindling &amp; road salt</h1>
           <p className="text-cream-200/85 mt-3 max-w-2xl text-lg">
-            Every price includes delivery within Crieff. Choose how many bags you need and add them to your basket — you&apos;ll see your
-            total before you order.
+            Every price includes delivery within Crieff. Choose how many you need and add them to your basket — you&apos;ll see your total
+            before you order.
           </p>
         </div>
       </section>

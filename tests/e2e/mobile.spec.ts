@@ -99,3 +99,52 @@ test("mobile: admin is usable on a phone", async ({ page, context }) => {
     await page.screenshot({ path: "test-results/mobile-admin-order.png", fullPage: true });
   }
 });
+
+test("mobile: Pickup Load card stays compact and the kindling photo shows the whole bag", async ({ page }) => {
+  const noErrors = trackErrors(page);
+  await page.goto("/shop");
+  for (const img of await page.locator("article img").all()) await img.scrollIntoViewIfNeeded();
+  await assertNoHorizontalScroll(page, "shop with four products");
+  const heights = await page.locator("article").evaluateAll((els) =>
+    els.map((e) => ({
+      name: e.querySelector("h3")!.textContent!,
+      h: e.getBoundingClientRect().height,
+      w: e.getBoundingClientRect().width,
+    })),
+  );
+  expect(heights.map((h) => h.name)).toEqual(["Seasoned Firewood", "Netted Bag of Kindling", "Road Salt", "Pickup Load"]);
+  const others = Math.max(...heights.slice(0, 3).map((h) => h.h));
+  const load = heights[3];
+  // Long description, but not an excessively tall card.
+  expect(load.h, `Pickup Load card is ${load.h}px vs ${others}px for the tallest other card`).toBeLessThanOrEqual(others * 1.15);
+  expect(load.w).toBeLessThanOrEqual(page.viewportSize()!.width);
+
+  const kindling = page.locator("article").nth(1);
+  const img = kindling.getByRole("img", { name: /Netted Bag of Kindling/ });
+  await expect.poll(() => img.evaluate((i: HTMLImageElement) => i.complete && i.naturalWidth > 0)).toBe(true);
+  const fit = await img.evaluate((i: HTMLImageElement) => {
+    const r = i.getBoundingClientRect();
+    const box = i.parentElement!.getBoundingClientRect();
+    return {
+      objectFit: getComputedStyle(i).objectFit,
+      inside: r.left >= box.left - 1 && r.right <= box.right + 1,
+      natural: i.naturalWidth / i.naturalHeight,
+    };
+  });
+  expect(fit.objectFit).toBe("contain"); // whole photo, never a cropped slice
+  expect(fit.inside).toBe(true);
+  expect(fit.natural).toBeGreaterThan(0.6); // portrait photo is intact
+  await page.locator("article").nth(1).screenshot({ path: "test-results/mobile-kindling-card.png" });
+  await page.locator("article").nth(3).screenshot({ path: "test-results/mobile-pickup-load-card.png" });
+  noErrors();
+});
+
+test("mobile: basket with a Pickup Load has no overflow and clear wording", async ({ page }) => {
+  await page.goto("/shop");
+  await page.evaluate(() => localStorage.setItem("tf-basket-v1", JSON.stringify({ "pickup-load": 2, kindling: 1 })));
+  await page.goto("/basket");
+  await expect(page.getByText("2 × £120.00 = £240.00")).toBeVisible();
+  await expect(page.getByText("Subtotal (3 items)")).toBeVisible();
+  await assertNoHorizontalScroll(page, "basket with pickup load");
+  await assertTapTargets(page, "basket with pickup load");
+});

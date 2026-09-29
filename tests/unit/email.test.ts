@@ -104,3 +104,31 @@ test("customer-supplied text is HTML-escaped", () => {
   assert.ok(!m.html.includes("<script>x"));
   assert.ok(!m.html.includes("<img src=x>"));
 });
+
+test("a Pickup Load is a load, never a bag, in both emails", () => {
+  const load: OrderWithItems = {
+    ...base,
+    subtotalPence: 12000,
+    totalPence: 12000,
+    items: [
+      {
+        id: "i9",
+        orderId: "o",
+        productId: "pickup-load",
+        productName: "Pickup Load",
+        unitPricePence: 12000,
+        quantity: 1,
+        lineTotalPence: 12000,
+      },
+    ],
+  };
+  const owner = ownerEmail(load, "timberflame84@gmail.com");
+  assert.ok(owner.text.includes("Pickup Load\n    Quantity: 1   Unit price: £120.00   Line total: £120.00"));
+  assert.ok(owner.text.includes("SUBTOTAL: £120.00") && owner.text.includes("TOTAL: £120.00"));
+  const cust = customerEmail(load, "07535 759768", "timberflame84@gmail.com");
+  assert.ok(cust.text.includes("1 × Pickup Load @ £120.00 = £120.00"));
+  for (const m of [owner, cust]) {
+    assert.doesNotMatch(m.text, /bag/i);
+    assert.doesNotMatch(m.html, /bag/i);
+  }
+});

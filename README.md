@@ -54,15 +54,22 @@ There is **no fallback to the default prices in `config/`**. Basket and checkout
 
 ## Current products
 
-| Product                | Price (per bag, delivered in Crieff) | Size        |
-| ---------------------- | ------------------------------------ | ----------- |
-| Seasoned Firewood      | £10                                  | —           |
-| Netted Bag of Kindling | £7                                   | 75cm × 45cm |
-| Road Salt              | £5                                   | —           |
+| Product                | Price, delivered in Crieff | Size        |
+| ---------------------- | -------------------------- | ----------- |
+| Seasoned Firewood      | £10 per bag                | —           |
+| Netted Bag of Kindling | £7 per bag                 | 75cm × 45cm |
+| Road Salt              | £5 per bag                 | —           |
+| Pickup Load            | £120 per load              | —           |
+
+The **Pickup Load** is an L200 pickup bed full of part-seasoned logs (about 1½ bulk bags): a loose load, not bagged, stacked when delivered. It goes through exactly the same basket, checkout, delivery rules and emails as everything else, and is priced from the database like the other products.
 
 Prices **include delivery within Crieff**. Outside Crieff a small delivery charge may apply — it's left blank ("to be confirmed") until the owner sets it in `/admin/delivery`. All delivery wording lives in `DELIVERY_COPY` in `config/business.ts`.
 
-Defaults live in `config/catalog.ts`. Migration `0002_current_products_and_email.sql` applies these prices and the contact email to an existing database once; after that, edit prices in `/admin/products`.
+Defaults live in `config/catalog.ts`. Prices, descriptions, photos and availability are then edited in `/admin/products`. The admin edits existing products; **adding a brand-new product** is done in code: add it to `DEFAULT_PRODUCTS` (fresh databases) **and** write a migration that inserts it with `ON CONFLICT ("id") DO NOTHING` (existing databases) — see `db/migrations/0004_pickup_load_and_kindling_photo.sql`, which adds the Pickup Load and installs the kindling photo without touching any price or photo the owner has already changed. `npm run db:migrate` applies it once; it is safe to re-run.
+
+**Photos** live in `public/images/` (e.g. `/images/kindling-bag.jpg`) and are referenced by path in `/admin/products`. Photos are always shown whole, never cropped, with a soft blurred backdrop filling any spare space, so portrait and landscape photos both work.
+
+The stand photographs on the site have the stand's price board blurred; prices at the stand are separate from the online prices above.
 
 ## Where to change things
 
@@ -77,7 +84,7 @@ Defaults live in `config/catalog.ts`. Migration `0002_current_products_and_email
 
 ## How ordering works (no online payment yet)
 
-1. **Shop** — customer picks bags; each card shows `£10 per bag`, `Delivery included in Crieff` and a live `3 × £10 = £30`.
+1. **Shop** — customer picks items; each card shows e.g. `£10 per bag` (or `£120 per load`), `Delivery included in Crieff` and a live `3 × £10 = £30`.
 2. **Basket** (`/basket`) — change quantities, remove items, and check a postcode: _"Crieff — delivery included"_ or _"Small delivery charge may apply — we'll confirm this with you."_
 3. **Checkout** (`/checkout`) — three short steps: _Your details_ (name, phone, email) → _Delivery details_ (postcode first, then address) → _Review your order_ → **Place order**. Browser Back moves between steps; typed details are kept for the session.
 4. **Server** (`/api/checkout`) validates everything, re-prices from the database, works out the delivery zone from the postcode, saves the order as **New / Awaiting payment**, generates an order number (`TF-XXXXXX`) and emails the business + customer.

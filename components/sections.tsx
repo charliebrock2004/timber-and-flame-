@@ -117,7 +117,7 @@ export function FinalCta({ phoneDisplay, phoneE164 }: { phoneDisplay: string; ph
           Order your firewood
         </h2>
         <p className="text-cream-200/85 mx-auto mt-4 max-w-xl text-lg">
-          Pick your bags, tell us where to bring them, done. {DELIVERY_COPY.headline} — {DELIVERY_COPY.outside.toLowerCase()}
+          Choose what you need, tell us where to bring it, done. {DELIVERY_COPY.headline} — {DELIVERY_COPY.outside.toLowerCase()}
         </p>
         <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
           <Link href="/shop" className="btn btn-primary px-8">

@@ -6,13 +6,14 @@
  * availability are edited at /admin/products (no rebuild needed).
  *
  * Prices are in PENCE (integers) and INCLUDE delivery within Crieff.
+ * The `unitLabel` says what one unit is ("per bag", "per load").
  * Outside Crieff a small delivery charge may be added — see the delivery
  * zones below and DELIVERY_COPY in config/business.ts.
  *
  *   id / slug   stable identifier used in the basket and URLs
  *   name        product name
  *   sizeLabel   supplied spec shown under the name (null = none given)
- *   pricePence  price per bag, delivered in Crieff
+ *   pricePence  price per unit (per bag, or per load), delivered in Crieff
  *   active      available to order online
  */
 
@@ -39,7 +40,7 @@ export const DEFAULT_PRODUCTS = [
     unitLabel: "per bag",
     sizeLabel: "75cm × 45cm" as string | null,
     pricePence: 700,
-    image: null as string | null,
+    image: "/images/kindling-bag.jpg" as string | null,
     visual: "kindling" as ProductVisual,
     accent: "orange",
     sortOrder: 2,
@@ -56,6 +57,20 @@ export const DEFAULT_PRODUCTS = [
     visual: "salt" as ProductVisual,
     accent: "blue",
     sortOrder: 3,
+    active: true,
+  },
+  {
+    id: "pickup-load",
+    name: "Pickup Load",
+    shortDescription:
+      "L200 pickup bed full of logs. Part seasoned. Equivalent to approximately 1½ bulk bags. This is a loose load, not bagged. The load is stacked when delivered.",
+    unitLabel: "per load",
+    sizeLabel: null as string | null,
+    pricePence: 12000,
+    image: null as string | null,
+    visual: "firewood" as ProductVisual,
+    accent: "red",
+    sortOrder: 4,
     active: true,
   },
 ];

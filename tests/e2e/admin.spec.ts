@@ -103,7 +103,7 @@ test("product edits in admin go live on the site and at checkout", async ({ page
     await form.getByRole("button", { name: /Save/ }).click();
     await expect(form.getByText("Saved Netted Bag of Kindling.")).toBeVisible();
     await page.goto("/shop");
-    await expect(page.locator("article")).toHaveCount(2);
+    await expect(page.locator("article")).toHaveCount(3); // 4 products, kindling hidden
     await page.goto("/admin/products");
     await form.getByLabel("Available to order online").check();
     await form.getByRole("button", { name: /Save/ }).click();
@@ -143,4 +143,63 @@ test("delivery zones and settings pages load from the database", async ({ page, 
   await expect(page.getByLabel("Business email")).toHaveValue("timberflame84@gmail.com");
   await expect(page.getByLabel("Phone (as shown)")).toHaveValue("07535 759768");
   await expect(page.getByText(/ON — new orders go to timberflame84@gmail.com/)).toBeVisible();
+});
+
+test("admin products: all four products listed and editable, with photo preview", async ({ page, context }) => {
+  await loginAsAdmin(context);
+  await page.goto("/admin/products");
+  const names = await page.locator('input[name="name"]').evaluateAll((els) => els.map((e) => (e as HTMLInputElement).value));
+  expect(names).toEqual(["Seasoned Firewood", "Netted Bag of Kindling", "Road Salt", "Pickup Load"]);
+
+  const load = page.locator("section").filter({ has: page.locator('input[value="pickup-load"]') });
+  await expect(load.getByLabel("Name")).toHaveValue("Pickup Load");
+  await expect(load.getByLabel("Price delivered in Crieff (£)")).toHaveValue("120.00");
+  await expect(load.getByLabel("Unit")).toHaveValue("per load");
+  await expect(load.getByLabel("Short description")).toHaveValue(/L200 pickup bed full of logs\. Part seasoned\./);
+  await expect(load.getByLabel("Size (optional)")).toHaveValue("");
+  await expect(load.getByLabel("Available to order online")).toBeChecked();
+  await expect(load.getByLabel("Photo (optional)")).toHaveValue("");
+
+  const kindling = page.locator("section").filter({ has: page.locator('input[value="kindling"]') });
+  await expect(kindling.getByLabel("Photo (optional)")).toHaveValue("/images/kindling-bag.jpg");
+  await expect(kindling.getByLabel("Price delivered in Crieff (£)")).toHaveValue("7.00");
+  await expect(kindling.getByLabel("Size (optional)")).toHaveValue("75cm × 45cm");
+  const preview = kindling.getByTestId("preview-kindling").locator("img[alt^='Netted Bag']");
+  await expect.poll(() => preview.evaluate((i: HTMLImageElement) => i.complete && i.naturalWidth > 0)).toBe(true);
+  expect(decodeURIComponent(await preview.evaluate((i: HTMLImageElement) => i.currentSrc))).toContain("kindling-bag.jpg");
+
+  for (const id of ["seasoned-firewood", "road-salt"]) {
+    const sec = page.locator("section").filter({ has: page.locator(`input[value="${id}"]`) });
+    await expect(sec.getByRole("button", { name: /^Save / })).toBeEnabled();
+  }
+});
+
+test("owner can edit the Pickup Load price and availability; site and checkout follow", async ({ page, context }) => {
+  await loginAsAdmin(context);
+  const load = page.locator("section").filter({ has: page.locator('input[value="pickup-load"]') });
+  const save = async () => {
+    await load.getByRole("button", { name: /Save/ }).click();
+    await expect(load.getByText("Saved Pickup Load.")).toBeVisible();
+  };
+  try {
+    await page.goto("/admin/products");
+    await load.getByLabel("Price delivered in Crieff (£)").fill("125");
+    await save();
+    await page.goto("/shop");
+    const card = page.locator("article").filter({ hasText: "Pickup Load" });
+    await expect(card.getByText("£125", { exact: true }).first()).toBeVisible();
+
+    await page.goto("/admin/products");
+    await load.getByLabel("Available to order online").uncheck();
+    await save();
+    await page.goto("/shop");
+    await expect(page.locator("article")).toHaveCount(3);
+    await expect(page.getByRole("heading", { name: "Pickup Load" })).toHaveCount(0);
+  } finally {
+    await sql("update products set price_pence = 12000, active = true where id = 'pickup-load'");
+    await page.goto("/admin/products");
+    await save(); // re-save through the real path so every public page refreshes
+  }
+  await page.goto("/shop");
+  await expect(page.locator("article").filter({ hasText: "Pickup Load" }).getByText("£120", { exact: true }).first()).toBeVisible();
 });

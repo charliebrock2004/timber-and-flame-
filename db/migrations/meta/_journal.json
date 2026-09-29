@@ -29,6 +29,13 @@
       "when": 1790622022687,
       "tag": "0003_order_email_status",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1790660150117,
+      "tag": "0004_pickup_load_and_kindling_photo",
+      "breakpoints": true
     }
   ]
 }

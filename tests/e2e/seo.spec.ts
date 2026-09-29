@@ -31,7 +31,7 @@ test("LocalBusiness structured data uses only real business facts", async ({ pag
   expect(ld.telephone).toBe("+447535759768");
   expect(ld.email).toBe("timberflame84@gmail.com");
   expect(ld.address).toEqual({ "@type": "PostalAddress", addressLocality: "Crieff", addressRegion: "Perthshire", addressCountry: "GB" });
-  expect(ld.hasOfferCatalog.itemListElement.map((o: { price: string }) => o.price)).toEqual(["10.00", "7.00", "5.00"]);
+  expect(ld.hasOfferCatalog.itemListElement.map((o: { price: string }) => o.price)).toEqual(["10.00", "7.00", "5.00", "120.00"]);
   for (const k of ["aggregateRating", "review", "openingHours", "openingHoursSpecification"]) expect(ld[k]).toBeUndefined();
 });
 

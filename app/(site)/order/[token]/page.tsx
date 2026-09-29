@@ -101,7 +101,7 @@ export default async function OrderPage(props: PageProps<"/order/[token]">) {
                 <tr key={i.id}>
                   <td className="py-2">
                     {i.productName}
-                    <span className="text-ink-soft block text-sm">{formatPence(i.unitPricePence)} per bag</span>
+                    <span className="text-ink-soft block text-sm">{formatPence(i.unitPricePence)} each</span>
                   </td>
                   <td className="py-2 text-center">{i.quantity}</td>
                   <td className="py-2 text-right">{formatPence(i.lineTotalPence)}</td>

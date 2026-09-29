@@ -205,6 +205,170 @@ test("price tampering: the server re-prices everything from the database", async
   expect(item).toEqual({ unit_price_pence: 1000, line_total_pence: 2000 });
 });
 
+const ORDER_CASES: [string, { productId: string; quantity: number }[], number][] = [
+  ["1 × Pickup Load", [{ productId: "pickup-load", quantity: 1 }], 12000],
+  ["2 × Pickup Load", [{ productId: "pickup-load", quantity: 2 }], 24000],
+  ["1 × Kindling", [{ productId: "kindling", quantity: 1 }], 700],
+  ["2 × Kindling", [{ productId: "kindling", quantity: 2 }], 1400],
+  [
+    "1 × Pickup Load + 1 × Kindling",
+    [
+      { productId: "pickup-load", quantity: 1 },
+      { productId: "kindling", quantity: 1 },
+    ],
+    12700,
+  ],
+  [
+    "1 × Pickup Load + 1 × Firewood + 1 × Salt",
+    [
+      { productId: "pickup-load", quantity: 1 },
+      { productId: "seasoned-firewood", quantity: 1 },
+      { productId: "road-salt", quantity: 1 },
+    ],
+    13500,
+  ],
+  [
+    "1 × Pickup Load + 2 × Kindling",
+    [
+      { productId: "pickup-load", quantity: 1 },
+      { productId: "kindling", quantity: 2 },
+    ],
+    13400,
+  ],
+];
+
+for (const [label, items, expected] of ORDER_CASES) {
+  test(`server total for ${label} = £${expected / 100}, from database prices`, async ({ request }) => {
+    const res = await request.post("/api/checkout", { headers: { origin: BASE }, data: apiBody({ items }) });
+    expect(res.status()).toBe(200);
+    const token = (await res.json()).redirectUrl.split("/order/")[1];
+    const [o] = await sql("select * from orders where access_token = $1", [token]);
+    // Crieff: delivery included, so the total is exactly the items.
+    expect(o).toMatchObject({
+      subtotal_pence: expected,
+      total_pence: expected,
+      delivery_charge_pence: 0,
+      payment_status: "AWAITING_PAYMENT",
+      status: "PENDING",
+    });
+    const rows = await sql<{ product_id: string; unit_price_pence: number; quantity: number; line_total_pence: number }>(
+      "select oi.product_id, oi.unit_price_pence, oi.quantity, oi.line_total_pence from order_items oi where order_id = $1",
+      [o.id],
+    );
+    const dbPrice = Object.fromEntries(
+      (await sql<{ id: string; price_pence: number }>("select id, price_pence from products")).map((r) => [r.id, r.price_pence]),
+    );
+    for (const r of rows) {
+      expect(r.unit_price_pence).toBe(dbPrice[r.product_id]);
+      expect(r.line_total_pence).toBe(dbPrice[r.product_id] * r.quantity);
+    }
+  });
+}
+
+test("Pickup Load outside Crieff: same rule as everything else — charge to be confirmed, none invented", async ({ request }) => {
+  const res = await request.post("/api/checkout", {
+    headers: { origin: BASE },
+    data: apiBody({ items: [{ productId: "pickup-load", quantity: 1 }], postcode: "PH1 5XY", town: "Perth" }),
+  });
+  expect(res.status()).toBe(200);
+  const token = (await res.json()).redirectUrl.split("/order/")[1];
+  const [o] = await sql("select * from orders where access_token = $1", [token]);
+  expect(o).toMatchObject({ delivery_zone_id: "outside-crieff", delivery_charge_pence: null, subtotal_pence: 12000, total_pence: 12000 });
+});
+
+test("price tampering on the Pickup Load: the server uses the database price of £120", async ({ request }) => {
+  const res = await request.post("/api/checkout", {
+    headers: { origin: BASE },
+    data: apiBody({
+      items: [{ productId: "pickup-load", quantity: 2, unitPricePence: 1, pricePence: 1, price: 0.01, lineTotalPence: 2 }],
+      subtotalPence: 2,
+      totalPence: 2,
+      deliveryChargePence: -500,
+      paymentStatus: "PAID",
+    }),
+  });
+  expect(res.status()).toBe(200);
+  const token = (await res.json()).redirectUrl.split("/order/")[1];
+  const [o] = await sql("select * from orders where access_token = $1", [token]);
+  expect(o).toMatchObject({ subtotal_pence: 24000, total_pence: 24000, delivery_charge_pence: 0, payment_status: "AWAITING_PAYMENT" });
+  const [item] = await sql("select unit_price_pence, line_total_pence, quantity from order_items where order_id = $1", [o.id]);
+  expect(item).toEqual({ unit_price_pence: 12000, line_total_pence: 24000, quantity: 2 });
+});
+
+test("a database price change is what the server charges (Pickup Load)", async ({ request }) => {
+  await sql("update products set price_pence = 12500 where id = 'pickup-load'");
+  try {
+    const res = await request.post("/api/checkout", {
+      headers: { origin: BASE },
+      data: apiBody({ items: [{ productId: "pickup-load", quantity: 1 }] }),
+    });
+    const token = (await res.json()).redirectUrl.split("/order/")[1];
+    expect((await sql("select total_pence from orders where access_token = $1", [token]))[0].total_pence).toBe(12500);
+  } finally {
+    await sql("update products set price_pence = 12000 where id = 'pickup-load'");
+  }
+});
+
+test("Pickup Load + Kindling through the whole journey: £127, database, both emails, admin", async ({ page, context }) => {
+  const noErrors = trackErrors(page);
+  await page.goto("/shop");
+  await addToBasket(page, "Pickup Load", 1);
+  await addToBasket(page, "Netted Bag of Kindling", 1);
+  await checkoutToReview(page, { ...CRIEFF_CUSTOMER, name: "Load Buyer", email: "load.buyer@example.test" });
+  const review = page.locator("#h-review-order").locator("..").locator("..");
+  await expect(review.getByText("1 × £120.00")).toBeVisible();
+  await expect(review.getByText("1 × £7.00")).toBeVisible();
+  await expect(review.locator("dd", { hasText: "£127.00" })).toHaveCount(2); // subtotal + total
+  await expect(review.getByText("Included", { exact: true })).toBeVisible();
+  const number = await placeOrder(page);
+  await expect(page.getByText("£120.00 each")).toBeVisible();
+  await expect(page.getByText("£127.00").first()).toBeVisible();
+
+  const o = await orderByNumber(number);
+  expect(o).toMatchObject({
+    subtotal_pence: 12700,
+    total_pence: 12700,
+    delivery_charge_pence: 0,
+    payment_status: "AWAITING_PAYMENT",
+    status: "PENDING",
+  });
+  const sent = await waitForMail(number, 2);
+  const owner = sent.find((m) => m.to.includes(BUSINESS_EMAIL))!;
+  const customer = sent.find((m) => m.to.includes("load.buyer@example.test"))!;
+  expect(owner.text).toContain("Pickup Load\n    Quantity: 1   Unit price: £120.00   Line total: £120.00");
+  expect(owner.text).toContain("SUBTOTAL: £127.00");
+  expect(owner.text).toContain("TOTAL: £127.00");
+  expect(customer.text).toContain("1 × Pickup Load @ £120.00 = £120.00");
+  expect(customer.text).toContain("Total: £127.00");
+
+  await loginAsAdmin(context);
+  await page.goto(`/admin/orders/${o.id}`);
+  await expect(page.getByText("1 × Pickup Load")).toBeVisible();
+  await expect(page.getByText("@ £120.00")).toBeVisible();
+  await expect(page.getByRole("cell", { name: "£120.00", exact: true })).toBeVisible();
+  await expect(page.getByRole("cell", { name: "£127.00" })).toHaveCount(2); // subtotal + total
+  await page.goto("/admin");
+  await expect(page.getByRole("row").filter({ hasText: number })).toContainText("1× Pickup Load, 1× Netted Bag of Kindling");
+  noErrors();
+});
+
+test("a Pickup Load order is described as a load, never a bag — page and emails", async ({ page }) => {
+  await page.goto("/shop");
+  await addToBasket(page, "Pickup Load", 2);
+  await page.goto("/basket");
+  await expect(page.locator("main")).not.toContainText(/\bbags?\b/i);
+  await checkoutToReview(page, { ...CRIEFF_CUSTOMER, name: "Only Load", email: "only.load@example.test" });
+  await expect(page.locator("main")).not.toContainText(/\bbags?\b/i);
+  const number = await placeOrder(page);
+  await expect(page.locator("main")).not.toContainText(/\bbags?\b/i);
+  expect((await orderByNumber(number)).total_pence).toBe(24000);
+  for (const m of await waitForMail(number, 2)) {
+    expect(m.text).not.toMatch(/bag/i);
+    expect(m.html).not.toMatch(/bag/i);
+    expect(m.text).toContain("£240.00");
+  }
+});
+
 test("server rejects unknown / hidden products, bad input and cross-site posts — and saves nothing", async ({ request }) => {
   const before = (await sql<{ n: number }>("select count(*)::int n from orders"))[0].n;
   const post = (data: object, headers: Record<string, string> = { origin: BASE }) => request.post("/api/checkout", { headers, data });
