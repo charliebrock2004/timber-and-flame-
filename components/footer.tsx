@@ -61,6 +61,17 @@ export function Footer({ settings }: { settings: PublicSettings }) {
           </p>
           <p>Thank you for supporting a local small business.</p>
         </div>
+        <p className="container-site text-cream-200/45 pb-5 text-xs">
+          Website built by{" "}
+          <a
+            href="https://peakswift-website-psi.vercel.app"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="underline decoration-white/20 underline-offset-4 transition-colors hover:text-cream-100 hover:decoration-cream-100"
+          >
+            PeakSwift Studio
+          </a>
+        </p>
       </div>
     </footer>
   );
