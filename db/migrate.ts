@@ -2,9 +2,9 @@
 import { drizzle } from "drizzle-orm/node-postgres";
 import { migrate } from "drizzle-orm/node-postgres/migrator";
 import { Pool } from "pg";
-import { cleanDatabaseUrl } from "../lib/database-url";
+import { requireExplicitDatabaseUrl } from "../lib/database-url";
 
-const pool = new Pool({ connectionString: cleanDatabaseUrl(process.env.DIRECT_URL || process.env.DATABASE_URL) });
+const pool = new Pool({ connectionString: requireExplicitDatabaseUrl() });
 
 migrate(drizzle(pool), { migrationsFolder: "./db/migrations" })
   .then(() => console.log("Migrations applied."))
