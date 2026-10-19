@@ -158,7 +158,7 @@ test("admin products: all five products listed and editable, with photo preview"
   await expect(load.getByLabel("Short description")).toHaveValue(/L200 pickup bed full of logs\. Part seasoned\./);
   await expect(load.getByLabel("Size (optional)")).toHaveValue("");
   await expect(load.getByLabel("Available to order online")).toBeChecked();
-  await expect(load.getByLabel("Photo (optional)")).toHaveValue("");
+  await expect(load.getByLabel("Photo (optional)")).toHaveValue("/images/pickup-load.jpg");
 
   const bulk = page.locator("section").filter({ has: page.locator('input[value="bulk-bag-of-logs"]') });
   await expect(bulk.getByLabel("Name")).toHaveValue("Bulk Bag of Logs");

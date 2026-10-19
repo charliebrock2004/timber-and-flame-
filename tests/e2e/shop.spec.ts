@@ -131,6 +131,12 @@ test("Pickup Load card: £120 per load, supplied description, delivery wording",
   const text = (await card.locator("p.flex-1").textContent())!;
   for (const line of LOAD_DESCRIPTION) expect(text).toContain(line);
   await expect(card.getByText("1 × £120 = £120")).toBeVisible();
+  const img = card.getByRole("img", { name: "Pickup Load from Timber & Flame, Crieff" });
+  await expect(img).toBeVisible();
+  await expect.poll(() => img.evaluate((i: HTMLImageElement) => i.complete && i.naturalWidth > 0)).toBe(true);
+  expect(decodeURIComponent(await img.evaluate((i: HTMLImageElement) => i.currentSrc))).toContain("/images/pickup-load.jpg");
+  expect(await img.evaluate((i) => getComputedStyle(i).objectFit)).toBe("contain");
+  await expect(card.getByRole("img", { name: /illustration/ })).toHaveCount(0);
   await card.getByRole("button", { name: /Increase/ }).click();
   await expect(card.getByText("2 × £120 = £240")).toBeVisible();
   noErrors();

@@ -43,6 +43,13 @@
       "when": 1792420000000,
       "tag": "0005_bulk_bag_of_logs",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1792422000000,
+      "tag": "0006_pickup_load_photo",
+      "breakpoints": true
     }
   ]
 }

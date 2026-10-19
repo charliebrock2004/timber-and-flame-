@@ -67,7 +67,7 @@ export const DEFAULT_PRODUCTS = [
     unitLabel: "per load",
     sizeLabel: null as string | null,
     pricePence: 12000,
-    image: null as string | null,
+    image: "/images/pickup-load.jpg" as string | null,
     visual: "firewood" as ProductVisual,
     accent: "red",
     sortOrder: 4,

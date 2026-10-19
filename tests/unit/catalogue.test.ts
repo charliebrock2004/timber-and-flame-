@@ -89,6 +89,32 @@ test("old honesty-stand prices are not in current source, seed data or migration
   assert.deepEqual(bad, []);
 });
 
+test("Pickup Load uses the supplied L200 photo, not the bag photo", async () => {
+  const p = DEFAULT_PRODUCTS.find((x) => x.id === "pickup-load")!;
+  assert.equal(p.image, "/images/pickup-load.jpg");
+  assert.notEqual(p.image, "/images/firewood-bags.jpg");
+  const file = path.join(ROOT, "public", p.image!);
+  const meta = await sharp(file).metadata();
+  assert.equal(`${meta.width}×${meta.height}`, "1500×1792");
+  assert.ok(fs.statSync(file).size < 500_000, "web-sized");
+  // Lower centre is the blue tailgate, not the pale bag photo.
+  const { data } = await sharp(file)
+    .extract({ left: 200, top: 1640, width: 500, height: 120 })
+    .resize(1, 1)
+    .raw()
+    .toBuffer({ resolveWithObject: true });
+  const [r, g, b] = data;
+  assert.ok(b > r + 10 && b > g, `expected the blue L200, got rgb(${r},${g},${b})`);
+});
+
+test("migration 0006 sets the pickup photo only when none is set", () => {
+  const sql = fs.readFileSync(path.join(ROOT, "db/migrations/0006_pickup_load_photo.sql"), "utf8");
+  assert.ok(!/\b(DELETE|DROP|TRUNCATE)\b/i.test(sql.replace(/--.*$/gm, "")));
+  assert.match(sql, /'pickup-load' AND \("image" IS NULL/);
+  assert.match(sql, /\/images\/pickup-load\.jpg/);
+  assert.doesNotMatch(sql, /price_pence/i);
+});
+
 test("Bulk Bag of Logs is £80 per bag, with no invented specification or borrowed photo", () => {
   const p = DEFAULT_PRODUCTS.find((x) => x.id === "bulk-bag-of-logs")!;
   assert.equal(p.name, "Bulk Bag of Logs");
