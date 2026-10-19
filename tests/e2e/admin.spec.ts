@@ -103,7 +103,7 @@ test("product edits in admin go live on the site and at checkout", async ({ page
     await form.getByRole("button", { name: /Save/ }).click();
     await expect(form.getByText("Saved Netted Bag of Kindling.")).toBeVisible();
     await page.goto("/shop");
-    await expect(page.locator("article")).toHaveCount(3); // 4 products, kindling hidden
+    await expect(page.locator("article")).toHaveCount(4); // 5 products, kindling hidden
     await page.goto("/admin/products");
     await form.getByLabel("Available to order online").check();
     await form.getByRole("button", { name: /Save/ }).click();
@@ -145,11 +145,11 @@ test("delivery zones and settings pages load from the database", async ({ page, 
   await expect(page.getByText(/ON — new orders go to timberflame84@gmail.com/)).toBeVisible();
 });
 
-test("admin products: all four products listed and editable, with photo preview", async ({ page, context }) => {
+test("admin products: all five products listed and editable, with photo preview", async ({ page, context }) => {
   await loginAsAdmin(context);
   await page.goto("/admin/products");
   const names = await page.locator('input[name="name"]').evaluateAll((els) => els.map((e) => (e as HTMLInputElement).value));
-  expect(names).toEqual(["Seasoned Firewood", "Netted Bag of Kindling", "Road Salt", "Pickup Load"]);
+  expect(names).toEqual(["Seasoned Firewood", "Netted Bag of Kindling", "Road Salt", "Pickup Load", "Bulk Bag of Logs"]);
 
   const load = page.locator("section").filter({ has: page.locator('input[value="pickup-load"]') });
   await expect(load.getByLabel("Name")).toHaveValue("Pickup Load");
@@ -159,6 +159,13 @@ test("admin products: all four products listed and editable, with photo preview"
   await expect(load.getByLabel("Size (optional)")).toHaveValue("");
   await expect(load.getByLabel("Available to order online")).toBeChecked();
   await expect(load.getByLabel("Photo (optional)")).toHaveValue("");
+
+  const bulk = page.locator("section").filter({ has: page.locator('input[value="bulk-bag-of-logs"]') });
+  await expect(bulk.getByLabel("Name")).toHaveValue("Bulk Bag of Logs");
+  await expect(bulk.getByLabel("Price delivered in Crieff (£)")).toHaveValue("80.00");
+  await expect(bulk.getByLabel("Unit")).toHaveValue("per bag");
+  await expect(bulk.getByLabel("Photo (optional)")).toHaveValue("");
+  await expect(bulk.getByLabel("Available to order online")).toBeChecked();
 
   const kindling = page.locator("section").filter({ has: page.locator('input[value="kindling"]') });
   await expect(kindling.getByLabel("Photo (optional)")).toHaveValue("/images/kindling-bag.jpg");
@@ -193,7 +200,7 @@ test("owner can edit the Pickup Load price and availability; site and checkout f
     await load.getByLabel("Available to order online").uncheck();
     await save();
     await page.goto("/shop");
-    await expect(page.locator("article")).toHaveCount(3);
+    await expect(page.locator("article")).toHaveCount(4);
     await expect(page.getByRole("heading", { name: "Pickup Load" })).toHaveCount(0);
   } finally {
     await sql("update products set price_pence = 12000, active = true where id = 'pickup-load'");

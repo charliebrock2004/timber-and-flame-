@@ -6,7 +6,7 @@ test.beforeEach(async ({ page }) => {
   await page.evaluate(() => localStorage.clear());
 });
 
-test("database holds exactly the four current products", async () => {
+test("database holds exactly the five current products", async () => {
   const rows = await sql<{ id: string; name: string; price_pence: number; size_label: string | null; active: boolean }>(
     "select id, name, price_pence, size_label, active from products where active order by sort_order",
   );
@@ -15,6 +15,7 @@ test("database holds exactly the four current products", async () => {
     { id: "kindling", name: "Netted Bag of Kindling", price_pence: 700, size_label: "75cm × 45cm", active: true },
     { id: "road-salt", name: "Road Salt", price_pence: 500, size_label: null, active: true },
     { id: "pickup-load", name: "Pickup Load", price_pence: 12000, size_label: null, active: true },
+    { id: "bulk-bag-of-logs", name: "Bulk Bag of Logs", price_pence: 8000, size_label: null, active: true },
   ]);
 });
 
@@ -22,7 +23,7 @@ test("homepage shows the business, products and delivery promise", async ({ page
   const noErrors = trackErrors(page);
   await page.goto("/");
   await expect(page.getByRole("link", { name: /Shop now/ })).toBeVisible();
-  await expect(page.locator("article")).toHaveCount(4);
+  await expect(page.locator("article")).toHaveCount(5);
   await expect(page.getByText("Free / included delivery in Crieff").first()).toBeVisible();
   await expect(page.getByText("Small delivery charge may apply outside Crieff.").first()).toBeVisible();
   noErrors();
@@ -32,12 +33,13 @@ test("shop cards: name, size, price per unit, delivery wording", async ({ page }
   const noErrors = trackErrors(page);
   await page.goto("/shop");
   const cards = page.locator("article");
-  await expect(cards).toHaveCount(4);
+  await expect(cards).toHaveCount(5);
   const expectations = [
     ["Seasoned Firewood", null, "£10", "per bag"],
     ["Netted Bag of Kindling", "75cm × 45cm", "£7", "per bag"],
     ["Road Salt", null, "£5", "per bag"],
     ["Pickup Load", null, "£120", "per load"],
+    ["Bulk Bag of Logs", null, "£80", "per bag"],
   ] as const;
   for (const [i, [name, size, price, unit]] of expectations.entries()) {
     const card = cards.nth(i);
@@ -197,7 +199,7 @@ test("kindling photo also shows in the basket thumbnail", async ({ page }) => {
   await expect.poll(() => img.evaluate((i: HTMLImageElement) => i.complete && i.naturalWidth > 0)).toBe(true);
 });
 
-test("no stale prices on any public page: no £3 kindling or £4 road salt, only the current four prices", async ({ page }) => {
+test("no stale prices on any public page: no £3 kindling or £4 road salt, only the current five prices", async ({ page }) => {
   const stale = /£\s?[34](?![\d.,])/;
   for (const path of ["/", "/shop", "/delivery", "/about", "/contact", "/basket", "/checkout"]) {
     await page.goto(path);
@@ -207,5 +209,5 @@ test("no stale prices on any public page: no £3 kindling or £4 road salt, only
   }
   await page.goto("/shop");
   const prices = await page.locator("article").evaluateAll((els) => els.map((e) => e.querySelector("p.flex .label")!.textContent));
-  expect(prices).toEqual(["£10", "£7", "£5", "£120"]);
+  expect(prices).toEqual(["£10", "£7", "£5", "£120", "£80"]);
 });

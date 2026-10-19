@@ -73,6 +73,20 @@ export const DEFAULT_PRODUCTS = [
     sortOrder: 4,
     active: true,
   },
+  {
+    id: "bulk-bag-of-logs",
+    name: "Bulk Bag of Logs",
+    shortDescription:
+      "Stock up on quality firewood with our bulk bag of logs, ideal for keeping your wood burner, fireplace or fire pit supplied. A convenient option for homes looking for a reliable supply of firewood from Timber and Flame.",
+    unitLabel: "per bag",
+    sizeLabel: null as string | null,
+    pricePence: 8000,
+    image: null as string | null,
+    visual: "firewood" as ProductVisual,
+    accent: "green",
+    sortOrder: 5,
+    active: true,
+  },
 ];
 
 /**

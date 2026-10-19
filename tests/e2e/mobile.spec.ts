@@ -104,7 +104,7 @@ test("mobile: Pickup Load card stays compact and the kindling photo shows the wh
   const noErrors = trackErrors(page);
   await page.goto("/shop");
   for (const img of await page.locator("article img").all()) await img.scrollIntoViewIfNeeded();
-  await assertNoHorizontalScroll(page, "shop with four products");
+  await assertNoHorizontalScroll(page, "shop with five products");
   const heights = await page.locator("article").evaluateAll((els) =>
     els.map((e) => ({
       name: e.querySelector("h3")!.textContent!,
@@ -112,7 +112,13 @@ test("mobile: Pickup Load card stays compact and the kindling photo shows the wh
       w: e.getBoundingClientRect().width,
     })),
   );
-  expect(heights.map((h) => h.name)).toEqual(["Seasoned Firewood", "Netted Bag of Kindling", "Road Salt", "Pickup Load"]);
+  expect(heights.map((h) => h.name)).toEqual([
+    "Seasoned Firewood",
+    "Netted Bag of Kindling",
+    "Road Salt",
+    "Pickup Load",
+    "Bulk Bag of Logs",
+  ]);
   const others = Math.max(...heights.slice(0, 3).map((h) => h.h));
   const load = heights[3];
   // Long description, but not an excessively tall card.

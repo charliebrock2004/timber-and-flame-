@@ -16,7 +16,7 @@ const total = (...lines: [string, number][]) =>
     0,
   ).totalPence;
 
-test("catalogue is exactly the four current products, in order", () => {
+test("catalogue is exactly the five current products, in order", () => {
   assert.deepEqual(
     DEFAULT_PRODUCTS.map((p) => [p.id, p.name, p.pricePence, p.unitLabel, p.sizeLabel, p.active]),
     [
@@ -24,6 +24,7 @@ test("catalogue is exactly the four current products, in order", () => {
       ["kindling", "Netted Bag of Kindling", 700, "per bag", "75cm × 45cm", true],
       ["road-salt", "Road Salt", 500, "per bag", null, true],
       ["pickup-load", "Pickup Load", 12000, "per load", null, true],
+      ["bulk-bag-of-logs", "Bulk Bag of Logs", 8000, "per bag", null, true],
     ],
   );
 });
@@ -86,6 +87,32 @@ test("old honesty-stand prices are not in current source, seed data or migration
       bad.push(`${f}: ${m[0]}`);
   }
   assert.deepEqual(bad, []);
+});
+
+test("Bulk Bag of Logs is £80 per bag, with no invented specification or borrowed photo", () => {
+  const p = DEFAULT_PRODUCTS.find((x) => x.id === "bulk-bag-of-logs")!;
+  assert.equal(p.name, "Bulk Bag of Logs");
+  assert.equal(p.pricePence, 8000);
+  assert.equal(formatPence(p.pricePence), "£80.00");
+  assert.equal(formatPence(total(["bulk-bag-of-logs", 1])), "£80.00");
+  assert.equal(formatPence(total(["bulk-bag-of-logs", 2])), "£160.00");
+  assert.equal(p.unitLabel, "per bag");
+  assert.equal(p.sizeLabel, null);
+  assert.equal(p.image, null);
+  assert.equal(p.visual, "firewood");
+  assert.equal(p.active, true);
+  assert.ok(p.shortDescription.length <= 240, "fits the admin description limit");
+  assert.match(p.shortDescription, /bulk bag of logs/i);
+  assert.doesNotMatch(p.shortDescription, /moisture|kiln|hardwood|softwood|oak|birch|ash|cubic|m³|litre|cm\b/i);
+});
+
+test("migration 0005 inserts the bulk bag once and never deletes or resets", () => {
+  const sql = fs.readFileSync(path.join(ROOT, "db/migrations/0005_bulk_bag_of_logs.sql"), "utf8");
+  assert.ok(!/\b(DELETE|DROP|TRUNCATE|UPDATE)\b/i.test(sql.replace(/--.*$/gm, "")));
+  assert.match(sql, /ON CONFLICT \("id"\) DO NOTHING/);
+  assert.match(sql, /'bulk-bag-of-logs'/);
+  assert.match(sql, /8000/);
+  assert.equal((sql.match(/8000/g) ?? []).length, 1);
 });
 
 test("migration 0004 only fixes exact stale prices and never deletes or resets", () => {
