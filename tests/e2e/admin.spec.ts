@@ -164,7 +164,7 @@ test("admin products: all five products listed and editable, with photo preview"
   await expect(bulk.getByLabel("Name")).toHaveValue("Bulk Bag of Logs");
   await expect(bulk.getByLabel("Price delivered in Crieff (£)")).toHaveValue("80.00");
   await expect(bulk.getByLabel("Unit")).toHaveValue("per bag");
-  await expect(bulk.getByLabel("Photo (optional)")).toHaveValue("");
+  await expect(bulk.getByLabel("Photo (optional)")).toHaveValue("/images/bulk-bag-of-logs.jpg");
   await expect(bulk.getByLabel("Available to order online")).toBeChecked();
 
   const kindling = page.locator("section").filter({ has: page.locator('input[value="kindling"]') });

@@ -81,7 +81,7 @@ export default async function HomePage() {
                 src={standWide}
                 alt="Bags of firewood stacked in the Timber & Flame honesty stand"
                 sizes="(min-width: 1024px) 560px, 0px"
-                className="h-[26rem] w-full object-cover object-[50%_22%]"
+                className="h-[26rem] w-full object-cover object-[50%_32%]"
                 placeholder="blur"
                 priority
               />

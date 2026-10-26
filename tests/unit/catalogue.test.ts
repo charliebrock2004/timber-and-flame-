@@ -115,7 +115,7 @@ test("migration 0006 sets the pickup photo only when none is set", () => {
   assert.doesNotMatch(sql, /price_pence/i);
 });
 
-test("Bulk Bag of Logs is £80 per bag, with no invented specification or borrowed photo", () => {
+test("Bulk Bag of Logs is £80 per bag, with the supplied bulk-bag photo and no invented specification", () => {
   const p = DEFAULT_PRODUCTS.find((x) => x.id === "bulk-bag-of-logs")!;
   assert.equal(p.name, "Bulk Bag of Logs");
   assert.equal(p.pricePence, 8000);
@@ -124,12 +124,22 @@ test("Bulk Bag of Logs is £80 per bag, with no invented specification or borrow
   assert.equal(formatPence(total(["bulk-bag-of-logs", 2])), "£160.00");
   assert.equal(p.unitLabel, "per bag");
   assert.equal(p.sizeLabel, null);
-  assert.equal(p.image, null);
+  assert.equal(p.image, "/images/bulk-bag-of-logs.jpg");
   assert.equal(p.visual, "firewood");
   assert.equal(p.active, true);
   assert.ok(p.shortDescription.length <= 240, "fits the admin description limit");
   assert.match(p.shortDescription, /bulk bag of logs/i);
   assert.doesNotMatch(p.shortDescription, /moisture|kiln|hardwood|softwood|oak|birch|ash|cubic|m³|litre|cm\b/i);
+  const file = path.join(ROOT, "public", p.image);
+  assert.ok(fs.existsSync(file), "bulk bag photo is in public/images");
+});
+
+test("migration 0007 sets the bulk bag photo only when none is set", () => {
+  const sql = fs.readFileSync(path.join(ROOT, "db/migrations/0007_bulk_bag_photo.sql"), "utf8");
+  assert.ok(!/\b(DELETE|DROP|TRUNCATE)\b/i.test(sql.replace(/--.*$/gm, "")));
+  assert.match(sql, /'bulk-bag-of-logs' AND \("image" IS NULL/);
+  assert.match(sql, /\/images\/bulk-bag-of-logs\.jpg/);
+  assert.doesNotMatch(sql, /price_pence/i);
 });
 
 test("migration 0005 inserts the bulk bag once and never deletes or resets", () => {

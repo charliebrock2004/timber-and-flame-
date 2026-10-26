@@ -4,7 +4,14 @@ import { migrate } from "drizzle-orm/node-postgres/migrator";
 import { Pool } from "pg";
 import { cleanDatabaseUrl } from "../lib/database-url";
 
-const pool = new Pool({ connectionString: cleanDatabaseUrl(process.env.DIRECT_URL || process.env.DATABASE_URL) });
+const pool = new Pool({
+  connectionString: cleanDatabaseUrl(
+    process.env.DIRECT_URL ||
+      process.env.DATABASE_URL_UNPOOLED ||
+      process.env.DATABASE_POSTGRES_URL_NON_POOLING ||
+      process.env.DATABASE_URL,
+  ),
+});
 
 migrate(drizzle(pool), { migrationsFolder: "./db/migrations" })
   .then(() => console.log("Migrations applied."))

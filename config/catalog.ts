@@ -81,7 +81,7 @@ export const DEFAULT_PRODUCTS = [
     unitLabel: "per bag",
     sizeLabel: null as string | null,
     pricePence: 8000,
-    image: null as string | null,
+    image: "/images/bulk-bag-of-logs.jpg" as string | null,
     visual: "firewood" as ProductVisual,
     accent: "green",
     sortOrder: 5,
