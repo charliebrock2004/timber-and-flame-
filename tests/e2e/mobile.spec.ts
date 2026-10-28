@@ -104,7 +104,7 @@ test("mobile: Pickup Load card stays compact and the kindling photo shows the wh
   const noErrors = trackErrors(page);
   await page.goto("/shop");
   for (const img of await page.locator("article img").all()) await img.scrollIntoViewIfNeeded();
-  await assertNoHorizontalScroll(page, "shop with five products");
+  await assertNoHorizontalScroll(page, "shop with seven products");
   const heights = await page.locator("article").evaluateAll((els) =>
     els.map((e) => ({
       name: e.querySelector("h3")!.textContent!,
@@ -113,19 +113,21 @@ test("mobile: Pickup Load card stays compact and the kindling photo shows the wh
     })),
   );
   expect(heights.map((h) => h.name)).toEqual([
+    "Part Seasoned Pickup Load",
+    "Fully Seasoned Pickup Load",
+    "Part Seasoned Bulk Bag",
+    "Fully Seasoned Bulk Bag",
     "Seasoned Firewood",
     "Netted Bag of Kindling",
     "Road Salt",
-    "Pickup Load",
-    "Bulk Bag of Logs",
   ]);
-  const others = Math.max(...heights.slice(0, 3).map((h) => h.h));
-  const load = heights[3];
+  const load = heights.find((h) => h.name === "Part Seasoned Pickup Load")!;
+  const others = Math.max(...heights.filter((h) => h.name !== "Part Seasoned Pickup Load").map((h) => h.h));
   // Long description, but not an excessively tall card.
   expect(load.h, `Pickup Load card is ${load.h}px vs ${others}px for the tallest other card`).toBeLessThanOrEqual(others * 1.15);
   expect(load.w).toBeLessThanOrEqual(page.viewportSize()!.width);
 
-  const kindling = page.locator("article").nth(1);
+  const kindling = page.locator("article").filter({ has: page.getByRole("heading", { name: "Netted Bag of Kindling", exact: true }) });
   const img = kindling.getByRole("img", { name: /Netted Bag of Kindling/ });
   await expect.poll(() => img.evaluate((i: HTMLImageElement) => i.complete && i.naturalWidth > 0)).toBe(true);
   const fit = await img.evaluate((i: HTMLImageElement) => {
@@ -140,8 +142,11 @@ test("mobile: Pickup Load card stays compact and the kindling photo shows the wh
   expect(fit.objectFit).toBe("contain"); // whole photo, never a cropped slice
   expect(fit.inside).toBe(true);
   expect(fit.natural).toBeGreaterThan(0.6); // portrait photo is intact
-  await page.locator("article").nth(1).screenshot({ path: "test-results/mobile-kindling-card.png" });
-  await page.locator("article").nth(3).screenshot({ path: "test-results/mobile-pickup-load-card.png" });
+  await kindling.screenshot({ path: "test-results/mobile-kindling-card.png" });
+  await page
+    .locator("article")
+    .filter({ has: page.getByRole("heading", { name: "Part Seasoned Pickup Load", exact: true }) })
+    .screenshot({ path: "test-results/mobile-pickup-load-card.png" });
   noErrors();
 });
 

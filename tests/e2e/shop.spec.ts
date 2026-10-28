@@ -6,16 +6,18 @@ test.beforeEach(async ({ page }) => {
   await page.evaluate(() => localStorage.clear());
 });
 
-test("database holds exactly the five current products", async () => {
+test("database holds exactly the seven current products", async () => {
   const rows = await sql<{ id: string; name: string; price_pence: number; size_label: string | null; active: boolean }>(
     "select id, name, price_pence, size_label, active from products where active order by sort_order",
   );
   expect(rows).toEqual([
+    { id: "pickup-load", name: "Part Seasoned Pickup Load", price_pence: 12000, size_label: null, active: true },
+    { id: "fully-seasoned-pickup-load", name: "Fully Seasoned Pickup Load", price_pence: 16000, size_label: null, active: true },
+    { id: "bulk-bag-of-logs", name: "Part Seasoned Bulk Bag", price_pence: 8000, size_label: null, active: true },
+    { id: "fully-seasoned-bulk-bag", name: "Fully Seasoned Bulk Bag", price_pence: 11000, size_label: null, active: true },
     { id: "seasoned-firewood", name: "Seasoned Firewood", price_pence: 1000, size_label: null, active: true },
     { id: "kindling", name: "Netted Bag of Kindling", price_pence: 700, size_label: "75cm × 45cm", active: true },
     { id: "road-salt", name: "Road Salt", price_pence: 500, size_label: null, active: true },
-    { id: "pickup-load", name: "Pickup Load", price_pence: 12000, size_label: null, active: true },
-    { id: "bulk-bag-of-logs", name: "Bulk Bag of Logs", price_pence: 8000, size_label: null, active: true },
   ]);
 });
 
@@ -23,7 +25,7 @@ test("homepage shows the business, products and delivery promise", async ({ page
   const noErrors = trackErrors(page);
   await page.goto("/");
   await expect(page.getByRole("link", { name: /Shop now/ })).toBeVisible();
-  await expect(page.locator("article")).toHaveCount(5);
+  await expect(page.locator("article")).toHaveCount(7);
   await expect(page.getByText("Free / included delivery in Crieff").first()).toBeVisible();
   await expect(page.getByText("Small delivery charge may apply outside Crieff.").first()).toBeVisible();
   noErrors();
@@ -33,13 +35,15 @@ test("shop cards: name, size, price per unit, delivery wording", async ({ page }
   const noErrors = trackErrors(page);
   await page.goto("/shop");
   const cards = page.locator("article");
-  await expect(cards).toHaveCount(5);
+  await expect(cards).toHaveCount(7);
   const expectations = [
+    ["Part Seasoned Pickup Load", null, "£120", "per load"],
+    ["Fully Seasoned Pickup Load", null, "£160", "per load"],
+    ["Part Seasoned Bulk Bag", null, "£80", "per bag"],
+    ["Fully Seasoned Bulk Bag", null, "£110", "per bag"],
     ["Seasoned Firewood", null, "£10", "per bag"],
     ["Netted Bag of Kindling", "75cm × 45cm", "£7", "per bag"],
     ["Road Salt", null, "£5", "per bag"],
-    ["Pickup Load", null, "£120", "per load"],
-    ["Bulk Bag of Logs", null, "£80", "per bag"],
   ] as const;
   for (const [i, [name, size, price, unit]] of expectations.entries()) {
     const card = cards.nth(i);
@@ -55,7 +59,7 @@ test("shop cards: name, size, price per unit, delivery wording", async ({ page }
 
 test("quantity shows the multiplication, not a misleading single price", async ({ page }) => {
   await page.goto("/shop");
-  const card = page.locator("article").first();
+  const card = page.locator("article").filter({ has: page.getByRole("heading", { name: "Seasoned Firewood", exact: true }) });
   await card.getByRole("button", { name: /Increase/ }).click();
   await card.getByRole("button", { name: /Increase/ }).click();
   await expect(card.getByText("3 × £10 = £30")).toBeVisible();
@@ -123,7 +127,7 @@ const LOAD_DESCRIPTION = [
 test("Pickup Load card: £120 per load, supplied description, delivery wording", async ({ page }) => {
   const noErrors = trackErrors(page);
   await page.goto("/shop");
-  const card = page.locator("article").filter({ has: page.getByRole("heading", { name: "Pickup Load", exact: true }) });
+  const card = page.locator("article").filter({ has: page.getByRole("heading", { name: "Part Seasoned Pickup Load", exact: true }) });
   await expect(card.getByText("£120", { exact: true }).first()).toBeVisible();
   await expect(card.getByText("per load", { exact: true })).toBeVisible();
   await expect(card.getByText("Delivery included in Crieff")).toBeVisible();
@@ -131,7 +135,7 @@ test("Pickup Load card: £120 per load, supplied description, delivery wording",
   const text = (await card.locator("p.flex-1").textContent())!;
   for (const line of LOAD_DESCRIPTION) expect(text).toContain(line);
   await expect(card.getByText("1 × £120 = £120")).toBeVisible();
-  const img = card.getByRole("img", { name: "Pickup Load from Timber & Flame, Crieff" });
+  const img = card.getByRole("img", { name: "Part Seasoned Pickup Load from Timber & Flame, Crieff" });
   await expect(img).toBeVisible();
   await expect.poll(() => img.evaluate((i: HTMLImageElement) => i.complete && i.naturalWidth > 0)).toBe(true);
   expect(decodeURIComponent(await img.evaluate((i: HTMLImageElement) => i.currentSrc))).toContain("/images/pickup-load.jpg");
@@ -145,15 +149,15 @@ test("Pickup Load card: £120 per load, supplied description, delivery wording",
 test("Pickup Load in the basket: quantity maths and wording (a load, not a bag)", async ({ page }) => {
   const noErrors = trackErrors(page);
   await page.goto("/shop");
-  await addToBasket(page, "Pickup Load", 1);
+  await addToBasket(page, "Part Seasoned Pickup Load", 1);
   await page.goto("/basket");
-  const line = page.getByRole("listitem").filter({ hasText: "Pickup Load" });
+  const line = page.getByRole("listitem").filter({ hasText: "Part Seasoned Pickup Load" });
   await expect(line.getByText("£120.00 per load · delivery included in Crieff")).toBeVisible();
   await expect(line).not.toContainText(/per bag/i);
   await expect(page.getByText("1 × £120.00 = £120.00")).toBeVisible();
   await expect(page.getByText("Subtotal (1 item)")).toBeVisible();
   await expect(page.getByRole("complementary").getByText("£120.00")).toBeVisible();
-  await page.getByRole("button", { name: "Increase Pickup Load quantity" }).click();
+  await page.getByRole("button", { name: "Increase Part Seasoned Pickup Load quantity" }).click();
   await expect(page.getByText("2 × £120.00 = £240.00")).toBeVisible();
   await expect(page.getByRole("complementary").getByText("£240.00")).toBeVisible();
 
@@ -205,7 +209,7 @@ test("kindling photo also shows in the basket thumbnail", async ({ page }) => {
   await expect.poll(() => img.evaluate((i: HTMLImageElement) => i.complete && i.naturalWidth > 0)).toBe(true);
 });
 
-test("no stale prices on any public page: no £3 kindling or £4 road salt, only the current five prices", async ({ page }) => {
+test("no stale prices on any public page: no £3 kindling or £4 road salt, only the current prices", async ({ page }) => {
   const stale = /£\s?[34](?![\d.,])/;
   for (const path of ["/", "/shop", "/delivery", "/about", "/contact", "/basket", "/checkout"]) {
     await page.goto(path);
@@ -215,5 +219,5 @@ test("no stale prices on any public page: no £3 kindling or £4 road salt, only
   }
   await page.goto("/shop");
   const prices = await page.locator("article").evaluateAll((els) => els.map((e) => e.querySelector("p.flex .label")!.textContent));
-  expect(prices).toEqual(["£10", "£7", "£5", "£120", "£80"]);
+  expect(prices).toEqual(["£120", "£160", "£80", "£110", "£10", "£7", "£5"]);
 });

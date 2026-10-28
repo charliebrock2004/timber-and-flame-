@@ -312,7 +312,7 @@ test("a database price change is what the server charges (Pickup Load)", async (
 test("Pickup Load + Kindling through the whole journey: £127, database, both emails, admin", async ({ page, context }) => {
   const noErrors = trackErrors(page);
   await page.goto("/shop");
-  await addToBasket(page, "Pickup Load", 1);
+  await addToBasket(page, "Part Seasoned Pickup Load", 1);
   await addToBasket(page, "Netted Bag of Kindling", 1);
   await checkoutToReview(page, { ...CRIEFF_CUSTOMER, name: "Load Buyer", email: "load.buyer@example.test" });
   const review = page.locator("#h-review-order").locator("..").locator("..");
@@ -335,26 +335,26 @@ test("Pickup Load + Kindling through the whole journey: £127, database, both em
   const sent = await waitForMail(number, 2);
   const owner = sent.find((m) => m.to.includes(BUSINESS_EMAIL))!;
   const customer = sent.find((m) => m.to.includes("load.buyer@example.test"))!;
-  expect(owner.text).toContain("Pickup Load\n    Quantity: 1   Unit price: £120.00   Line total: £120.00");
+  expect(owner.text).toContain("Part Seasoned Pickup Load\n    Quantity: 1   Unit price: £120.00   Line total: £120.00");
   expect(owner.text).toContain("SUBTOTAL: £127.00");
   expect(owner.text).toContain("TOTAL: £127.00");
-  expect(customer.text).toContain("1 × Pickup Load @ £120.00 = £120.00");
+  expect(customer.text).toContain("1 × Part Seasoned Pickup Load @ £120.00 = £120.00");
   expect(customer.text).toContain("Total: £127.00");
 
   await loginAsAdmin(context);
   await page.goto(`/admin/orders/${o.id}`);
-  await expect(page.getByText("1 × Pickup Load")).toBeVisible();
+  await expect(page.getByText("1 × Part Seasoned Pickup Load")).toBeVisible();
   await expect(page.getByText("@ £120.00")).toBeVisible();
   await expect(page.getByRole("cell", { name: "£120.00", exact: true })).toBeVisible();
   await expect(page.getByRole("cell", { name: "£127.00" })).toHaveCount(2); // subtotal + total
   await page.goto("/admin");
-  await expect(page.getByRole("row").filter({ hasText: number })).toContainText("1× Pickup Load, 1× Netted Bag of Kindling");
+  await expect(page.getByRole("row").filter({ hasText: number })).toContainText("1× Part Seasoned Pickup Load, 1× Netted Bag of Kindling");
   noErrors();
 });
 
 test("a Pickup Load order is described as a load, never a bag — page and emails", async ({ page }) => {
   await page.goto("/shop");
-  await addToBasket(page, "Pickup Load", 2);
+  await addToBasket(page, "Part Seasoned Pickup Load", 2);
   await page.goto("/basket");
   await expect(page.locator("main")).not.toContainText(/\bbags?\b/i);
   await checkoutToReview(page, { ...CRIEFF_CUSTOMER, name: "Only Load", email: "only.load@example.test" });

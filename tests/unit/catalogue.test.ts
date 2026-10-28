@@ -16,15 +16,17 @@ const total = (...lines: [string, number][]) =>
     0,
   ).totalPence;
 
-test("catalogue is exactly the five current products, in order", () => {
+test("catalogue is exactly the seven current products, pickup and bulk bag first", () => {
   assert.deepEqual(
     DEFAULT_PRODUCTS.map((p) => [p.id, p.name, p.pricePence, p.unitLabel, p.sizeLabel, p.active]),
     [
+      ["pickup-load", "Part Seasoned Pickup Load", 12000, "per load", null, true],
+      ["fully-seasoned-pickup-load", "Fully Seasoned Pickup Load", 16000, "per load", null, true],
+      ["bulk-bag-of-logs", "Part Seasoned Bulk Bag", 8000, "per bag", null, true],
+      ["fully-seasoned-bulk-bag", "Fully Seasoned Bulk Bag", 11000, "per bag", null, true],
       ["seasoned-firewood", "Seasoned Firewood", 1000, "per bag", null, true],
       ["kindling", "Netted Bag of Kindling", 700, "per bag", "75cm × 45cm", true],
       ["road-salt", "Road Salt", 500, "per bag", null, true],
-      ["pickup-load", "Pickup Load", 12000, "per load", null, true],
-      ["bulk-bag-of-logs", "Bulk Bag of Logs", 8000, "per bag", null, true],
     ],
   );
 });
@@ -89,7 +91,21 @@ test("old honesty-stand prices are not in current source, seed data or migration
   assert.deepEqual(bad, []);
 });
 
-test("Pickup Load uses the supplied L200 photo, not the bag photo", async () => {
+test("fully seasoned pickup reuses the existing load photo at £160", () => {
+  const part = DEFAULT_PRODUCTS.find((x) => x.id === "pickup-load")!;
+  const full = DEFAULT_PRODUCTS.find((x) => x.id === "fully-seasoned-pickup-load")!;
+  assert.equal(full.name, "Fully Seasoned Pickup Load");
+  assert.equal(full.pricePence, 16000);
+  assert.equal(formatPence(full.pricePence), "£160.00");
+  assert.equal(formatPence(total(["fully-seasoned-pickup-load", 1])), "£160.00");
+  assert.equal(full.unitLabel, "per load");
+  assert.equal(full.image, part.image);
+  assert.equal(full.image, "/images/pickup-load.jpg");
+  assert.ok(full.shortDescription.includes("Fully seasoned."));
+  assert.ok(full.shortDescription.length <= 240);
+});
+
+test("Part Seasoned Pickup Load uses the supplied L200 photo, not the bag photo", async () => {
   const p = DEFAULT_PRODUCTS.find((x) => x.id === "pickup-load")!;
   assert.equal(p.image, "/images/pickup-load.jpg");
   assert.notEqual(p.image, "/images/firewood-bags.jpg");
@@ -115,23 +131,52 @@ test("migration 0006 sets the pickup photo only when none is set", () => {
   assert.doesNotMatch(sql, /price_pence/i);
 });
 
-test("Bulk Bag of Logs is £80 per bag, with the supplied bulk-bag photo and no invented specification", () => {
-  const p = DEFAULT_PRODUCTS.find((x) => x.id === "bulk-bag-of-logs")!;
-  assert.equal(p.name, "Bulk Bag of Logs");
-  assert.equal(p.pricePence, 8000);
-  assert.equal(formatPence(p.pricePence), "£80.00");
+test("Part Seasoned Bulk Bag is £80 and Fully Seasoned Bulk Bag is £110, sharing the existing photo", () => {
+  const part = DEFAULT_PRODUCTS.find((x) => x.id === "bulk-bag-of-logs")!;
+  const full = DEFAULT_PRODUCTS.find((x) => x.id === "fully-seasoned-bulk-bag")!;
+  assert.equal(part.name, "Part Seasoned Bulk Bag");
+  assert.equal(part.pricePence, 8000);
+  assert.equal(formatPence(part.pricePence), "£80.00");
   assert.equal(formatPence(total(["bulk-bag-of-logs", 1])), "£80.00");
   assert.equal(formatPence(total(["bulk-bag-of-logs", 2])), "£160.00");
-  assert.equal(p.unitLabel, "per bag");
-  assert.equal(p.sizeLabel, null);
-  assert.equal(p.image, "/images/bulk-bag-of-logs.jpg");
-  assert.equal(p.visual, "firewood");
-  assert.equal(p.active, true);
-  assert.ok(p.shortDescription.length <= 240, "fits the admin description limit");
-  assert.match(p.shortDescription, /bulk bag of logs/i);
-  assert.doesNotMatch(p.shortDescription, /moisture|kiln|hardwood|softwood|oak|birch|ash|cubic|m³|litre|cm\b/i);
-  const file = path.join(ROOT, "public", p.image);
+  assert.equal(part.unitLabel, "per bag");
+  assert.equal(part.sizeLabel, null);
+  assert.equal(part.image, "/images/bulk-bag-of-logs.jpg");
+  assert.equal(part.visual, "firewood");
+  assert.equal(part.active, true);
+  assert.ok(part.shortDescription.length <= 240, "fits the admin description limit");
+  assert.match(part.shortDescription, /part-seasoned/i);
+  assert.match(part.shortDescription, /bulk bag of logs/i);
+  assert.doesNotMatch(part.shortDescription, /moisture|kiln|hardwood|softwood|oak|birch|ash|cubic|m³|litre|cm\b/i);
+  assert.equal(full.name, "Fully Seasoned Bulk Bag");
+  assert.equal(full.pricePence, 11000);
+  assert.equal(formatPence(full.pricePence), "£110.00");
+  assert.equal(formatPence(total(["fully-seasoned-bulk-bag", 1])), "£110.00");
+  assert.equal(full.image, part.image);
+  assert.equal(full.unitLabel, "per bag");
+  assert.match(full.shortDescription, /fully seasoned/i);
+  assert.doesNotMatch(full.shortDescription, /moisture|kiln|hardwood|softwood|oak|birch|ash|cubic|m³|litre|cm\b/i);
+  assert.ok(full.shortDescription.length <= 240);
+  const file = path.join(ROOT, "public", part.image!);
   assert.ok(fs.existsSync(file), "bulk bag photo is in public/images");
+});
+
+test("migration 0008 sets the four seasoned prices without deleting or replacing photos", () => {
+  const sql = fs.readFileSync(path.join(ROOT, "db/migrations/0008_seasoned_options.sql"), "utf8");
+  const code = sql.replace(/--.*$/gm, "");
+  assert.ok(!/\b(DELETE|DROP|TRUNCATE)\b/i.test(code));
+  assert.match(sql, /'Part Seasoned Pickup Load'/);
+  assert.match(sql, /'Fully Seasoned Pickup Load'/);
+  assert.match(sql, /'Part Seasoned Bulk Bag'/);
+  assert.match(sql, /'Fully Seasoned Bulk Bag'/);
+  assert.match(sql, /WHERE "id" = 'pickup-load'/);
+  assert.match(sql, /12000/);
+  assert.match(sql, /16000/);
+  assert.match(sql, /8000/);
+  assert.match(sql, /11000/);
+  assert.match(sql, /\/images\/pickup-load\.jpg/);
+  assert.match(sql, /\/images\/bulk-bag-of-logs\.jpg/);
+  assert.doesNotMatch(sql, /\/images\/(?!pickup-load\.jpg|bulk-bag-of-logs\.jpg)/);
 });
 
 test("migration 0007 sets the bulk bag photo only when none is set", () => {

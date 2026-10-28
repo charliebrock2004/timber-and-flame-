@@ -57,6 +57,13 @@
       "when": 1793038300000,
       "tag": "0007_bulk_bag_photo",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1793226000000,
+      "tag": "0008_seasoned_options",
+      "breakpoints": true
     }
   ]
 }

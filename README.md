@@ -54,17 +54,19 @@ There is **no fallback to the default prices in `config/`**. Basket and checkout
 
 ## Current products
 
-| Product                | Price, delivered in Crieff | Size        |
-| ---------------------- | -------------------------- | ----------- |
-| Seasoned Firewood      | £10 per bag                | —           |
-| Netted Bag of Kindling | £7 per bag                 | 75cm × 45cm |
-| Road Salt              | £5 per bag                 | —           |
-| Pickup Load            | £120 per load              | —           |
-| Bulk Bag of Logs       | £80 per bag                | —           |
+| Product                    | Price, delivered in Crieff | Size        |
+| -------------------------- | -------------------------- | ----------- |
+| Part Seasoned Pickup Load  | £120 per load              | —           |
+| Fully Seasoned Pickup Load | £160 per load              | —           |
+| Part Seasoned Bulk Bag     | £80 per bag                | —           |
+| Fully Seasoned Bulk Bag    | £110 per bag               | —           |
+| Seasoned Firewood          | £10 per bag                | —           |
+| Netted Bag of Kindling     | £7 per bag                 | 75cm × 45cm |
+| Road Salt                  | £5 per bag                 | —           |
 
-The **Pickup Load** is an L200 pickup bed full of part-seasoned logs (about 1½ bulk bags): a loose load, not bagged, stacked when delivered. It goes through exactly the same basket, checkout, delivery rules and emails as everything else, and is priced from the database like the other products. The shop photo is `public/images/pickup-load.jpg`.
+The **Part Seasoned Pickup Load** is an L200 pickup bed full of part-seasoned logs (about 1½ bulk bags): a loose load, not bagged, stacked when delivered, at £120. The **Fully Seasoned Pickup Load** is the same load of fully seasoned logs at £160. Both use the existing photo `public/images/pickup-load.jpg` and the same basket, checkout and delivery rules. The original product id is still `pickup-load`.
 
-The **Bulk Bag of Logs** is £80 per bag. No bag volume, log size, species or moisture figure is published, because none has been supplied. It uses the same basket and checkout as the other products. The shop photo is `public/images/bulk-bag-of-logs.jpg`.
+The **Part Seasoned Bulk Bag** is £80 per bag. The **Fully Seasoned Bulk Bag** is £110 per bag. No bag volume, log size, species or moisture figure is published, because none has been supplied. Both use the existing photo `public/images/bulk-bag-of-logs.jpg`.
 
 Prices **include delivery within Crieff**. Outside Crieff a small delivery charge may apply — it's left blank ("to be confirmed") until the owner sets it in `/admin/delivery`. All delivery wording lives in `DELIVERY_COPY` in `config/business.ts`.
 

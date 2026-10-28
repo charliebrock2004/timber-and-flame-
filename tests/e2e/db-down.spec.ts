@@ -56,17 +56,16 @@ test("pages built from the database never fall back to config prices", async ({ 
   // database down they either show that last database render or the error
   // page — never the defaults in config/catalog.ts. Prove the difference: the
   // down server must match what the live database says.
-  const [{ price_pence }] = await sql<{ price_pence: number }>("select price_pence from products where id = 'seasoned-firewood'");
+  const [{ price_pence, name }] = await sql<{ price_pence: number; name: string }>(
+    "select price_pence, name from products where active order by sort_order limit 1",
+  );
   await page.goto("/shop");
   const unavailable = await page.getByRole("heading", { name: "Online ordering is temporarily unavailable" }).count();
-  if (!unavailable)
-    await expect(
-      page
-        .locator("article")
-        .first()
-        .getByText(`£${price_pence / 100}`, { exact: true })
-        .first(),
-    ).toBeVisible();
+  if (!unavailable) {
+    const card = page.locator("article").first();
+    await expect(card.getByRole("heading", { name, exact: true })).toBeVisible();
+    await expect(card.getByText(`£${price_pence / 100}`, { exact: true }).first()).toBeVisible();
+  }
 });
 
 test("contact details still reachable during an outage", async ({ page }) => {
