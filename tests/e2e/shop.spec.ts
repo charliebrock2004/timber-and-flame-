@@ -11,10 +11,10 @@ test("database holds exactly the seven current products", async () => {
     "select id, name, price_pence, size_label, active from products where active order by sort_order",
   );
   expect(rows).toEqual([
-    { id: "pickup-load", name: "Part Seasoned Pickup Load", price_pence: 12000, size_label: null, active: true },
     { id: "fully-seasoned-pickup-load", name: "Fully Seasoned Pickup Load", price_pence: 16000, size_label: null, active: true },
-    { id: "bulk-bag-of-logs", name: "Part Seasoned Bulk Bag", price_pence: 8000, size_label: null, active: true },
+    { id: "pickup-load", name: "Part Seasoned Pickup Load", price_pence: 12000, size_label: null, active: true },
     { id: "fully-seasoned-bulk-bag", name: "Fully Seasoned Bulk Bag", price_pence: 11000, size_label: null, active: true },
+    { id: "bulk-bag-of-logs", name: "Part Seasoned Bulk Bag", price_pence: 8000, size_label: null, active: true },
     { id: "seasoned-firewood", name: "Seasoned Firewood", price_pence: 1000, size_label: null, active: true },
     { id: "kindling", name: "Netted Bag of Kindling", price_pence: 700, size_label: "75cm × 45cm", active: true },
     { id: "road-salt", name: "Road Salt", price_pence: 500, size_label: null, active: true },
@@ -37,10 +37,10 @@ test("shop cards: name, size, price per unit, delivery wording", async ({ page }
   const cards = page.locator("article");
   await expect(cards).toHaveCount(7);
   const expectations = [
-    ["Part Seasoned Pickup Load", null, "£120", "per load"],
     ["Fully Seasoned Pickup Load", null, "£160", "per load"],
-    ["Part Seasoned Bulk Bag", null, "£80", "per bag"],
+    ["Part Seasoned Pickup Load", null, "£120", "per load"],
     ["Fully Seasoned Bulk Bag", null, "£110", "per bag"],
+    ["Part Seasoned Bulk Bag", null, "£80", "per bag"],
     ["Seasoned Firewood", null, "£10", "per bag"],
     ["Netted Bag of Kindling", "75cm × 45cm", "£7", "per bag"],
     ["Road Salt", null, "£5", "per bag"],
@@ -219,5 +219,5 @@ test("no stale prices on any public page: no £3 kindling or £4 road salt, only
   }
   await page.goto("/shop");
   const prices = await page.locator("article").evaluateAll((els) => els.map((e) => e.querySelector("p.flex .label")!.textContent));
-  expect(prices).toEqual(["£120", "£160", "£80", "£110", "£10", "£7", "£5"]);
+  expect(prices).toEqual(["£160", "£120", "£110", "£80", "£10", "£7", "£5"]);
 });

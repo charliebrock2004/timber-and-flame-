@@ -20,10 +20,10 @@ test("catalogue is exactly the seven current products, pickup and bulk bag first
   assert.deepEqual(
     DEFAULT_PRODUCTS.map((p) => [p.id, p.name, p.pricePence, p.unitLabel, p.sizeLabel, p.active]),
     [
-      ["pickup-load", "Part Seasoned Pickup Load", 12000, "per load", null, true],
       ["fully-seasoned-pickup-load", "Fully Seasoned Pickup Load", 16000, "per load", null, true],
-      ["bulk-bag-of-logs", "Part Seasoned Bulk Bag", 8000, "per bag", null, true],
+      ["pickup-load", "Part Seasoned Pickup Load", 12000, "per load", null, true],
       ["fully-seasoned-bulk-bag", "Fully Seasoned Bulk Bag", 11000, "per bag", null, true],
+      ["bulk-bag-of-logs", "Part Seasoned Bulk Bag", 8000, "per bag", null, true],
       ["seasoned-firewood", "Seasoned Firewood", 1000, "per bag", null, true],
       ["kindling", "Netted Bag of Kindling", 700, "per bag", "75cm × 45cm", true],
       ["road-salt", "Road Salt", 500, "per bag", null, true],
@@ -177,6 +177,36 @@ test("migration 0008 sets the four seasoned prices without deleting or replacing
   assert.match(sql, /\/images\/pickup-load\.jpg/);
   assert.match(sql, /\/images\/bulk-bag-of-logs\.jpg/);
   assert.doesNotMatch(sql, /\/images\/(?!pickup-load\.jpg|bulk-bag-of-logs\.jpg)/);
+});
+
+test("catalogue sort puts fully seasoned above part seasoned, then the other products", () => {
+  assert.deepEqual(
+    DEFAULT_PRODUCTS.map((p) => [p.id, p.sortOrder]),
+    [
+      ["fully-seasoned-pickup-load", 1],
+      ["pickup-load", 2],
+      ["fully-seasoned-bulk-bag", 3],
+      ["bulk-bag-of-logs", 4],
+      ["seasoned-firewood", 5],
+      ["kindling", 6],
+      ["road-salt", 7],
+    ],
+  );
+});
+
+test("migration 0009 changes sort order only", () => {
+  const sql = fs.readFileSync(path.join(ROOT, "db/migrations/0009_product_order.sql"), "utf8");
+  const code = sql.replace(/--.*$/gm, "");
+  assert.ok(!/\b(DELETE|DROP|TRUNCATE|INSERT)\b/i.test(code));
+  assert.doesNotMatch(code, /price_pence|name|short_description|image/i);
+  assert.match(sql, /'fully-seasoned-pickup-load'/);
+  assert.match(sql, /"sort_order" = 1/);
+  assert.match(sql, /"id" = 'pickup-load'/);
+  assert.match(sql, /"sort_order" = 2/);
+  assert.match(sql, /'fully-seasoned-bulk-bag'/);
+  assert.match(sql, /"sort_order" = 3/);
+  assert.match(sql, /'bulk-bag-of-logs'/);
+  assert.match(sql, /"sort_order" = 4/);
 });
 
 test("migration 0007 sets the bulk bag photo only when none is set", () => {

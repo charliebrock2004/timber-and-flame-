@@ -150,10 +150,10 @@ test("admin products: all five products listed and editable, with photo preview"
   await page.goto("/admin/products");
   const names = await page.locator('input[name="name"]').evaluateAll((els) => els.map((e) => (e as HTMLInputElement).value));
   expect(names).toEqual([
-    "Part Seasoned Pickup Load",
     "Fully Seasoned Pickup Load",
-    "Part Seasoned Bulk Bag",
+    "Part Seasoned Pickup Load",
     "Fully Seasoned Bulk Bag",
+    "Part Seasoned Bulk Bag",
     "Seasoned Firewood",
     "Netted Bag of Kindling",
     "Road Salt",

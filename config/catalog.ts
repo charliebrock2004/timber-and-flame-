@@ -21,20 +21,6 @@ export type ProductVisual = "firewood" | "kindling" | "salt";
 
 export const DEFAULT_PRODUCTS = [
   {
-    id: "pickup-load",
-    name: "Part Seasoned Pickup Load",
-    shortDescription:
-      "L200 pickup bed full of logs. Part seasoned. Equivalent to approximately 1½ bulk bags. This is a loose load, not bagged. The load is stacked when delivered.",
-    unitLabel: "per load",
-    sizeLabel: null as string | null,
-    pricePence: 12000,
-    image: "/images/pickup-load.jpg" as string | null,
-    visual: "firewood" as ProductVisual,
-    accent: "red",
-    sortOrder: 1,
-    active: true,
-  },
-  {
     id: "fully-seasoned-pickup-load",
     name: "Fully Seasoned Pickup Load",
     shortDescription:
@@ -45,21 +31,21 @@ export const DEFAULT_PRODUCTS = [
     image: "/images/pickup-load.jpg" as string | null,
     visual: "firewood" as ProductVisual,
     accent: "red",
-    sortOrder: 2,
+    sortOrder: 1,
     active: true,
   },
   {
-    id: "bulk-bag-of-logs",
-    name: "Part Seasoned Bulk Bag",
+    id: "pickup-load",
+    name: "Part Seasoned Pickup Load",
     shortDescription:
-      "Stock up on part-seasoned firewood with our bulk bag of logs, ideal for keeping your wood burner, fireplace or fire pit supplied. A convenient option for homes looking for a reliable supply of firewood from Timber and Flame.",
-    unitLabel: "per bag",
+      "L200 pickup bed full of logs. Part seasoned. Equivalent to approximately 1½ bulk bags. This is a loose load, not bagged. The load is stacked when delivered.",
+    unitLabel: "per load",
     sizeLabel: null as string | null,
-    pricePence: 8000,
-    image: "/images/bulk-bag-of-logs.jpg" as string | null,
+    pricePence: 12000,
+    image: "/images/pickup-load.jpg" as string | null,
     visual: "firewood" as ProductVisual,
-    accent: "green",
-    sortOrder: 3,
+    accent: "red",
+    sortOrder: 2,
     active: true,
   },
   {
@@ -70,6 +56,20 @@ export const DEFAULT_PRODUCTS = [
     unitLabel: "per bag",
     sizeLabel: null as string | null,
     pricePence: 11000,
+    image: "/images/bulk-bag-of-logs.jpg" as string | null,
+    visual: "firewood" as ProductVisual,
+    accent: "green",
+    sortOrder: 3,
+    active: true,
+  },
+  {
+    id: "bulk-bag-of-logs",
+    name: "Part Seasoned Bulk Bag",
+    shortDescription:
+      "Stock up on part-seasoned firewood with our bulk bag of logs, ideal for keeping your wood burner, fireplace or fire pit supplied. A convenient option for homes looking for a reliable supply of firewood from Timber and Flame.",
+    unitLabel: "per bag",
+    sizeLabel: null as string | null,
+    pricePence: 8000,
     image: "/images/bulk-bag-of-logs.jpg" as string | null,
     visual: "firewood" as ProductVisual,
     accent: "green",

@@ -113,10 +113,10 @@ test("mobile: Pickup Load card stays compact and the kindling photo shows the wh
     })),
   );
   expect(heights.map((h) => h.name)).toEqual([
-    "Part Seasoned Pickup Load",
     "Fully Seasoned Pickup Load",
-    "Part Seasoned Bulk Bag",
+    "Part Seasoned Pickup Load",
     "Fully Seasoned Bulk Bag",
+    "Part Seasoned Bulk Bag",
     "Seasoned Firewood",
     "Netted Bag of Kindling",
     "Road Salt",

@@ -56,10 +56,10 @@ There is **no fallback to the default prices in `config/`**. Basket and checkout
 
 | Product                    | Price, delivered in Crieff | Size        |
 | -------------------------- | -------------------------- | ----------- |
-| Part Seasoned Pickup Load  | £120 per load              | —           |
 | Fully Seasoned Pickup Load | £160 per load              | —           |
-| Part Seasoned Bulk Bag     | £80 per bag                | —           |
+| Part Seasoned Pickup Load  | £120 per load              | —           |
 | Fully Seasoned Bulk Bag    | £110 per bag               | —           |
+| Part Seasoned Bulk Bag     | £80 per bag                | —           |
 | Seasoned Firewood          | £10 per bag                | —           |
 | Netted Bag of Kindling     | £7 per bag                 | 75cm × 45cm |
 | Road Salt                  | £5 per bag                 | —           |
