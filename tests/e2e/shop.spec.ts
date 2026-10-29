@@ -6,15 +6,23 @@ test.beforeEach(async ({ page }) => {
   await page.evaluate(() => localStorage.clear());
 });
 
-test("database holds exactly the seven current products", async () => {
+test("database holds the nine current products, fully seasoned options first", async () => {
   const rows = await sql<{ id: string; name: string; price_pence: number; size_label: string | null; active: boolean }>(
     "select id, name, price_pence, size_label, active from products where active order by sort_order",
   );
   expect(rows).toEqual([
-    { id: "fully-seasoned-pickup-load", name: "Fully Seasoned Pickup Load", price_pence: 16000, size_label: null, active: true },
-    { id: "pickup-load", name: "Part Seasoned Pickup Load", price_pence: 12000, size_label: null, active: true },
-    { id: "fully-seasoned-bulk-bag", name: "Fully Seasoned Bulk Bag", price_pence: 11000, size_label: null, active: true },
-    { id: "bulk-bag-of-logs", name: "Part Seasoned Bulk Bag", price_pence: 8000, size_label: null, active: true },
+    { id: "fully-seasoned-pickup-load", name: "Fully Seasoned Pickup Load — Softwood", price_pence: 15000, size_label: null, active: true },
+    {
+      id: "fully-seasoned-pickup-hardwood",
+      name: "Fully Seasoned Pickup Load — Hardwood",
+      price_pence: 16500,
+      size_label: null,
+      active: true,
+    },
+    { id: "fully-seasoned-bulk-softwood", name: "Fully Seasoned Bulk Bag — Softwood", price_pence: 9500, size_label: null, active: true },
+    { id: "fully-seasoned-bulk-bag", name: "Fully Seasoned Bulk Bag — Hardwood", price_pence: 11000, size_label: null, active: true },
+    { id: "pickup-load", name: "Part-Seasoned Pickup Load — Softwood", price_pence: 12000, size_label: null, active: true },
+    { id: "bulk-bag-of-logs", name: "Part-Seasoned Bulk Bag — Softwood", price_pence: 8000, size_label: null, active: true },
     { id: "seasoned-firewood", name: "Seasoned Firewood", price_pence: 1000, size_label: null, active: true },
     { id: "kindling", name: "Netted Bag of Kindling", price_pence: 700, size_label: "75cm × 45cm", active: true },
     { id: "road-salt", name: "Road Salt", price_pence: 500, size_label: null, active: true },
@@ -37,10 +45,10 @@ test("shop cards: name, size, price per unit, delivery wording", async ({ page }
   const cards = page.locator("article");
   await expect(cards).toHaveCount(7);
   const expectations = [
-    ["Fully Seasoned Pickup Load", null, "£160", "per load"],
-    ["Part Seasoned Pickup Load", null, "£120", "per load"],
-    ["Fully Seasoned Bulk Bag", null, "£110", "per bag"],
-    ["Part Seasoned Bulk Bag", null, "£80", "per bag"],
+    ["Fully Seasoned Pickup Loads", null, "£150", "per load"],
+    ["Fully Seasoned Bulk Bags", null, "£95", "per bag"],
+    ["Part-Seasoned Pickup Loads", null, "£120", "per load"],
+    ["Part-Seasoned Bulk Bags", null, "£80", "per bag"],
     ["Seasoned Firewood", null, "£10", "per bag"],
     ["Netted Bag of Kindling", "75cm × 45cm", "£7", "per bag"],
     ["Road Salt", null, "£5", "per bag"],
@@ -117,25 +125,34 @@ test("empty basket and checkout say so", async ({ page }) => {
 });
 
 const LOAD_DESCRIPTION = [
-  "L200 pickup bed full of logs.",
-  "Part seasoned.",
-  "Equivalent to approximately 1½ bulk bags.",
+  "L200 pickup bed full of part-seasoned softwood logs.",
   "This is a loose load, not bagged.",
   "The load is stacked when delivered.",
 ];
 
-test("Pickup Load card: £120 per load, supplied description, delivery wording", async ({ page }) => {
+test("Part-seasoned pickup card: softwood only, £120 per load, no bulk-bag equivalent", async ({ page }) => {
   const noErrors = trackErrors(page);
   await page.goto("/shop");
-  const card = page.locator("article").filter({ has: page.getByRole("heading", { name: "Part Seasoned Pickup Load", exact: true }) });
+  await expect(page.getByRole("heading", { name: "Fully Seasoned Firewood" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Part-Seasoned Firewood" })).toBeVisible();
+  const fully = page.locator("section").filter({ has: page.getByRole("heading", { name: "Fully Seasoned Firewood", exact: true }) });
+  const part = page.locator("section").filter({ has: page.getByRole("heading", { name: "Part-Seasoned Firewood", exact: true }) });
+  const fullyBox = await fully.boundingBox();
+  const partBox = await part.boundingBox();
+  expect(fullyBox && partBox && fullyBox.y < partBox.y).toBe(true);
+
+  const card = page.locator("article").filter({ has: page.getByRole("heading", { name: "Part-Seasoned Pickup Loads", exact: true }) });
+  await expect(card.getByRole("radio", { name: /Part-seasoned softwood/ })).toBeChecked();
+  await expect(card.getByRole("radio", { name: /Hardwood/ })).toHaveCount(0);
   await expect(card.getByText("£120", { exact: true }).first()).toBeVisible();
   await expect(card.getByText("per load", { exact: true })).toBeVisible();
   await expect(card.getByText("Delivery included in Crieff")).toBeVisible();
   await expect(card.getByText("Small delivery charge may apply outside Crieff.")).toBeVisible();
   const text = (await card.locator("p.flex-1").textContent())!;
   for (const line of LOAD_DESCRIPTION) expect(text).toContain(line);
+  await expect(text).not.toMatch(/1½|1\.5|bulk bag/i);
   await expect(card.getByText("1 × £120 = £120")).toBeVisible();
-  const img = card.getByRole("img", { name: "Part Seasoned Pickup Load from Timber & Flame, Crieff" });
+  const img = card.getByRole("img", { name: "Part-Seasoned Pickup Load — Softwood from Timber & Flame, Crieff" });
   await expect(img).toBeVisible();
   await expect.poll(() => img.evaluate((i: HTMLImageElement) => i.complete && i.naturalWidth > 0)).toBe(true);
   expect(decodeURIComponent(await img.evaluate((i: HTMLImageElement) => i.currentSrc))).toContain("/images/pickup-load.jpg");
@@ -146,18 +163,40 @@ test("Pickup Load card: £120 per load, supplied description, delivery wording",
   noErrors();
 });
 
+test("selecting hardwood prices the fully seasoned pickup at £165, not the softwood price", async ({ page }) => {
+  const noErrors = trackErrors(page);
+  await page.goto("/shop");
+  const card = page.locator("article").filter({ has: page.getByRole("heading", { name: "Fully Seasoned Pickup Loads", exact: true }) });
+  await expect(card.getByRole("radio", { name: /^Softwood/ })).toBeChecked();
+  await expect(card.getByText("£150", { exact: true }).first()).toBeVisible();
+  await card.getByRole("radio", { name: /^Hardwood/ }).click();
+  await expect(card.getByRole("radio", { name: /^Hardwood/ })).toBeChecked();
+  await expect(card.getByText("£165", { exact: true }).first()).toBeVisible();
+  await expect(card.getByText("1 × £165 = £165")).toBeVisible();
+  await expect(card.getByText(/fully seasoned hardwood/i)).toBeVisible();
+  await card.getByRole("button", { name: /Add to basket Fully Seasoned Pickup Load — Hardwood/ }).click();
+  await expect(card.getByText(/in your basket/)).toBeVisible();
+  const stored = await page.evaluate(() => localStorage.getItem("tf-basket-v1"));
+  expect(JSON.parse(stored!)).toEqual({ "fully-seasoned-pickup-hardwood": 1 });
+  await page.goto("/basket");
+  await expect(page.getByText("Fully Seasoned Pickup Load — Hardwood")).toBeVisible();
+  await expect(page.getByText("1 × £165.00 = £165.00")).toBeVisible();
+  await expect(page.getByText("£150")).toHaveCount(0);
+  noErrors();
+});
+
 test("Pickup Load in the basket: quantity maths and wording (a load, not a bag)", async ({ page }) => {
   const noErrors = trackErrors(page);
   await page.goto("/shop");
-  await addToBasket(page, "Part Seasoned Pickup Load", 1);
+  await addToBasket(page, "Part-Seasoned Pickup Loads", 1);
   await page.goto("/basket");
-  const line = page.getByRole("listitem").filter({ hasText: "Part Seasoned Pickup Load" });
+  const line = page.getByRole("listitem").filter({ hasText: "Part-Seasoned Pickup Load — Softwood" });
   await expect(line.getByText("£120.00 per load · delivery included in Crieff")).toBeVisible();
   await expect(line).not.toContainText(/per bag/i);
   await expect(page.getByText("1 × £120.00 = £120.00")).toBeVisible();
   await expect(page.getByText("Subtotal (1 item)")).toBeVisible();
   await expect(page.getByRole("complementary").getByText("£120.00")).toBeVisible();
-  await page.getByRole("button", { name: "Increase Part Seasoned Pickup Load quantity" }).click();
+  await page.getByRole("button", { name: "Increase Part-Seasoned Pickup Load — Softwood quantity" }).click();
   await expect(page.getByText("2 × £120.00 = £240.00")).toBeVisible();
   await expect(page.getByRole("complementary").getByText("£240.00")).toBeVisible();
 
@@ -219,5 +258,5 @@ test("no stale prices on any public page: no £3 kindling or £4 road salt, only
   }
   await page.goto("/shop");
   const prices = await page.locator("article").evaluateAll((els) => els.map((e) => e.querySelector("p.flex .label")!.textContent));
-  expect(prices).toEqual(["£160", "£120", "£110", "£80", "£10", "£7", "£5"]);
+  expect(prices).toEqual(["£150", "£95", "£120", "£80", "£10", "£7", "£5"]);
 });

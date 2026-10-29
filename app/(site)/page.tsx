@@ -4,7 +4,7 @@ import type { Metadata } from "next";
 import { openGraphFor } from "@/lib/seo";
 import standWide from "@/public/images/stand-wide.jpg";
 import { Logo } from "@/components/logo";
-import { ProductCard } from "@/components/product-card";
+import { ProductCatalogue } from "@/components/product-catalogue";
 import { DeliveryCards, Eyebrow, FinalCta, HonestyStandSection } from "@/components/sections";
 import { FlameIcon, PhoneIcon, PinIcon, TagIcon, TruckIcon } from "@/components/icons";
 import { getActiveProducts, getDeliveryZones, getSettings } from "@/lib/catalog";
@@ -116,11 +116,7 @@ export default async function HomePage() {
             Prices per bag or per load, <strong className="text-ink">delivery in Crieff included.</strong>
           </p>
         </div>
-        <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {products.map((p, i) => (
-            <ProductCard key={p.id} product={p} priority={i === 0} />
-          ))}
-        </div>
+        <ProductCatalogue products={products} level={3} />
       </section>
 
       {/* WHY */}

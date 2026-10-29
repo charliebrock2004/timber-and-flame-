@@ -113,16 +113,16 @@ test("mobile: Pickup Load card stays compact and the kindling photo shows the wh
     })),
   );
   expect(heights.map((h) => h.name)).toEqual([
-    "Fully Seasoned Pickup Load",
-    "Part Seasoned Pickup Load",
-    "Fully Seasoned Bulk Bag",
-    "Part Seasoned Bulk Bag",
+    "Fully Seasoned Pickup Loads",
+    "Fully Seasoned Bulk Bags",
+    "Part-Seasoned Pickup Loads",
+    "Part-Seasoned Bulk Bags",
     "Seasoned Firewood",
     "Netted Bag of Kindling",
     "Road Salt",
   ]);
-  const load = heights.find((h) => h.name === "Part Seasoned Pickup Load")!;
-  const others = Math.max(...heights.filter((h) => h.name !== "Part Seasoned Pickup Load").map((h) => h.h));
+  const load = heights.find((h) => h.name === "Part-Seasoned Pickup Loads")!;
+  const others = Math.max(...heights.filter((h) => h.name !== "Part-Seasoned Pickup Loads").map((h) => h.h));
   // Long description, but not an excessively tall card.
   expect(load.h, `Pickup Load card is ${load.h}px vs ${others}px for the tallest other card`).toBeLessThanOrEqual(others * 1.15);
   expect(load.w).toBeLessThanOrEqual(page.viewportSize()!.width);
@@ -145,7 +145,7 @@ test("mobile: Pickup Load card stays compact and the kindling photo shows the wh
   await kindling.screenshot({ path: "test-results/mobile-kindling-card.png" });
   await page
     .locator("article")
-    .filter({ has: page.getByRole("heading", { name: "Part Seasoned Pickup Load", exact: true }) })
+    .filter({ has: page.getByRole("heading", { name: "Part-Seasoned Pickup Loads", exact: true }) })
     .screenshot({ path: "test-results/mobile-pickup-load-card.png" });
   noErrors();
 });

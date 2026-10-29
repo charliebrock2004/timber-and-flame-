@@ -71,6 +71,13 @@
       "when": 1793227000000,
       "tag": "0009_product_order",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1793312000000,
+      "tag": "0010_wood_type_options",
+      "breakpoints": true
     }
   ]
 }

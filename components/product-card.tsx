@@ -21,10 +21,19 @@ const STRIPE: Record<string, string> = {
  * Styled after the stand's price board: coloured stripe, condensed caps,
  * big price. Quantity + add are right on the card so ordering is 1–2 taps.
  */
-export function ProductCard({ product, priority = false }: { product: PublicProduct; priority?: boolean }) {
+export function ProductCard({
+  product,
+  priority = false,
+  titleAs = "h3",
+}: {
+  product: PublicProduct;
+  priority?: boolean;
+  titleAs?: "h3" | "h4";
+}) {
   const [qty, setQty] = useState(1);
   const [justAdded, setJustAdded] = useState(false);
   const inBasket = useBasket()[product.id] ?? 0;
+  const Title = titleAs;
 
   function add() {
     basket.add(product.id, qty);
@@ -40,7 +49,7 @@ export function ProductCard({ product, priority = false }: { product: PublicProd
       </div>
       <div className="relative flex flex-1 flex-col p-5 pl-7">
         <span className={`absolute inset-y-5 left-0 w-1.5 rounded-r ${STRIPE[product.accent] ?? "bg-ember-700"}`} aria-hidden />
-        <h3 className="label text-ink text-[1.4rem] leading-tight font-semibold tracking-[0.04em]">{product.name}</h3>
+        <Title className="label text-ink text-[1.4rem] leading-tight font-semibold tracking-[0.04em]">{product.name}</Title>
         {product.sizeLabel && (
           <p className="label text-ink-soft mt-1 text-base">
             <span className="sr-only">Size: </span>

@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { openGraphFor } from "@/lib/seo";
 import Link from "next/link";
-import { ProductCard } from "@/components/product-card";
+import { ProductCatalogue } from "@/components/product-catalogue";
 import { Eyebrow } from "@/components/sections";
 import { TruckIcon } from "@/components/icons";
 import { getActiveProducts, getSettings } from "@/lib/catalog";
@@ -57,13 +57,7 @@ export default async function ShopPage() {
             .
           </p>
         ) : (
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {products.map((p, i) => (
-              <div key={p.id} id={p.id} className="scroll-mt-28">
-                <ProductCard product={p} priority={i === 0} />
-              </div>
-            ))}
-          </div>
+          <ProductCatalogue products={products} />
         )}
         <div className="mt-10 flex flex-col items-center gap-3 text-center">
           <Link href="/basket" className="btn btn-primary px-10">

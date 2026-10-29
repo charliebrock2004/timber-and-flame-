@@ -22,12 +22,12 @@ export type ProductVisual = "firewood" | "kindling" | "salt";
 export const DEFAULT_PRODUCTS = [
   {
     id: "fully-seasoned-pickup-load",
-    name: "Fully Seasoned Pickup Load",
+    name: "Fully Seasoned Pickup Load — Softwood",
     shortDescription:
-      "L200 pickup bed full of logs. Fully seasoned. Equivalent to approximately 1½ bulk bags. This is a loose load, not bagged. The load is stacked when delivered.",
+      "L200 pickup bed full of fully seasoned softwood logs. This is a loose load, not bagged. The load is stacked when delivered.",
     unitLabel: "per load",
     sizeLabel: null as string | null,
-    pricePence: 16000,
+    pricePence: 15000,
     image: "/images/pickup-load.jpg" as string | null,
     visual: "firewood" as ProductVisual,
     accent: "red",
@@ -35,13 +35,13 @@ export const DEFAULT_PRODUCTS = [
     active: true,
   },
   {
-    id: "pickup-load",
-    name: "Part Seasoned Pickup Load",
+    id: "fully-seasoned-pickup-hardwood",
+    name: "Fully Seasoned Pickup Load — Hardwood",
     shortDescription:
-      "L200 pickup bed full of logs. Part seasoned. Equivalent to approximately 1½ bulk bags. This is a loose load, not bagged. The load is stacked when delivered.",
+      "L200 pickup bed full of fully seasoned hardwood logs. This is a loose load, not bagged. The load is stacked when delivered.",
     unitLabel: "per load",
     sizeLabel: null as string | null,
-    pricePence: 12000,
+    pricePence: 16500,
     image: "/images/pickup-load.jpg" as string | null,
     visual: "firewood" as ProductVisual,
     accent: "red",
@@ -49,13 +49,12 @@ export const DEFAULT_PRODUCTS = [
     active: true,
   },
   {
-    id: "fully-seasoned-bulk-bag",
-    name: "Fully Seasoned Bulk Bag",
-    shortDescription:
-      "Stock up on fully seasoned firewood with our bulk bag of logs, ideal for keeping your wood burner, fireplace or fire pit supplied. A convenient option for homes looking for a reliable supply of firewood from Timber and Flame.",
+    id: "fully-seasoned-bulk-softwood",
+    name: "Fully Seasoned Bulk Bag — Softwood",
+    shortDescription: "Fully seasoned softwood logs supplied in a bulk bag, for a wood burner, fireplace or fire pit.",
     unitLabel: "per bag",
     sizeLabel: null as string | null,
-    pricePence: 11000,
+    pricePence: 9500,
     image: "/images/bulk-bag-of-logs.jpg" as string | null,
     visual: "firewood" as ProductVisual,
     accent: "green",
@@ -63,17 +62,43 @@ export const DEFAULT_PRODUCTS = [
     active: true,
   },
   {
-    id: "bulk-bag-of-logs",
-    name: "Part Seasoned Bulk Bag",
+    id: "fully-seasoned-bulk-bag",
+    name: "Fully Seasoned Bulk Bag — Hardwood",
+    shortDescription: "Fully seasoned hardwood logs supplied in a bulk bag, for a wood burner, fireplace or fire pit.",
+    unitLabel: "per bag",
+    sizeLabel: null as string | null,
+    pricePence: 11000,
+    image: "/images/bulk-bag-of-logs.jpg" as string | null,
+    visual: "firewood" as ProductVisual,
+    accent: "green",
+    sortOrder: 4,
+    active: true,
+  },
+  {
+    id: "pickup-load",
+    name: "Part-Seasoned Pickup Load — Softwood",
     shortDescription:
-      "Stock up on part-seasoned firewood with our bulk bag of logs, ideal for keeping your wood burner, fireplace or fire pit supplied. A convenient option for homes looking for a reliable supply of firewood from Timber and Flame.",
+      "L200 pickup bed full of part-seasoned softwood logs. This is a loose load, not bagged. The load is stacked when delivered.",
+    unitLabel: "per load",
+    sizeLabel: null as string | null,
+    pricePence: 12000,
+    image: "/images/pickup-load.jpg" as string | null,
+    visual: "firewood" as ProductVisual,
+    accent: "red",
+    sortOrder: 5,
+    active: true,
+  },
+  {
+    id: "bulk-bag-of-logs",
+    name: "Part-Seasoned Bulk Bag — Softwood",
+    shortDescription: "Part-seasoned softwood logs supplied in a bulk bag, for a wood burner, fireplace or fire pit.",
     unitLabel: "per bag",
     sizeLabel: null as string | null,
     pricePence: 8000,
     image: "/images/bulk-bag-of-logs.jpg" as string | null,
     visual: "firewood" as ProductVisual,
     accent: "green",
-    sortOrder: 4,
+    sortOrder: 6,
     active: true,
   },
   {
@@ -86,7 +111,7 @@ export const DEFAULT_PRODUCTS = [
     image: "/images/firewood-bags.jpg",
     visual: "firewood" as ProductVisual,
     accent: "green",
-    sortOrder: 5,
+    sortOrder: 7,
     active: true,
   },
   {
@@ -99,7 +124,7 @@ export const DEFAULT_PRODUCTS = [
     image: "/images/kindling-bag.jpg" as string | null,
     visual: "kindling" as ProductVisual,
     accent: "orange",
-    sortOrder: 6,
+    sortOrder: 8,
     active: true,
   },
   {
@@ -112,10 +137,63 @@ export const DEFAULT_PRODUCTS = [
     image: null as string | null,
     visual: "salt" as ProductVisual,
     accent: "blue",
-    sortOrder: 7,
+    sortOrder: 9,
     active: true,
   },
 ];
+
+/**
+ * How the six firewood options are grouped on the shop. Prices live only on
+ * DEFAULT_PRODUCTS (and then the database). This list is ids and labels.
+ * Fully seasoned is first. Pickup loads come before bulk bags in each section.
+ * Part-seasoned is softwood only.
+ */
+export const FIREWOOD_SECTIONS = [
+  {
+    id: "fully-seasoned",
+    heading: "Fully Seasoned Firewood",
+    note: "Ready to burn. Choose softwood or hardwood — the price updates before you add it to your basket.",
+    groups: [
+      {
+        id: "fully-seasoned-pickup",
+        name: "Fully Seasoned Pickup Loads",
+        optionIds: ["fully-seasoned-pickup-load", "fully-seasoned-pickup-hardwood"],
+      },
+      {
+        id: "fully-seasoned-bags",
+        name: "Fully Seasoned Bulk Bags",
+        optionIds: ["fully-seasoned-bulk-softwood", "fully-seasoned-bulk-bag"],
+      },
+    ],
+  },
+  {
+    id: "part-seasoned",
+    heading: "Part-Seasoned Firewood",
+    note: "Part-seasoned softwood only. These are not fully seasoned.",
+    groups: [
+      {
+        id: "part-seasoned-pickup",
+        name: "Part-Seasoned Pickup Loads",
+        optionIds: ["pickup-load"],
+      },
+      {
+        id: "part-seasoned-bags",
+        name: "Part-Seasoned Bulk Bags",
+        optionIds: ["bulk-bag-of-logs"],
+      },
+    ],
+  },
+] as const;
+
+/** Button label for each firewood option. Part-seasoned says so explicitly. */
+export const WOOD_OPTION_LABEL: Record<string, string> = {
+  "fully-seasoned-pickup-load": "Softwood",
+  "fully-seasoned-pickup-hardwood": "Hardwood",
+  "fully-seasoned-bulk-softwood": "Softwood",
+  "fully-seasoned-bulk-bag": "Hardwood",
+  "pickup-load": "Part-seasoned softwood",
+  "bulk-bag-of-logs": "Part-seasoned softwood",
+};
 
 /**
  * Delivery zones. The first enabled zone whose postcode prefixes match the

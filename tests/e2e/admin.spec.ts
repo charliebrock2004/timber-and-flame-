@@ -150,26 +150,28 @@ test("admin products: all five products listed and editable, with photo preview"
   await page.goto("/admin/products");
   const names = await page.locator('input[name="name"]').evaluateAll((els) => els.map((e) => (e as HTMLInputElement).value));
   expect(names).toEqual([
-    "Fully Seasoned Pickup Load",
-    "Part Seasoned Pickup Load",
-    "Fully Seasoned Bulk Bag",
-    "Part Seasoned Bulk Bag",
+    "Fully Seasoned Pickup Load — Softwood",
+    "Fully Seasoned Pickup Load — Hardwood",
+    "Fully Seasoned Bulk Bag — Softwood",
+    "Fully Seasoned Bulk Bag — Hardwood",
+    "Part-Seasoned Pickup Load — Softwood",
+    "Part-Seasoned Bulk Bag — Softwood",
     "Seasoned Firewood",
     "Netted Bag of Kindling",
     "Road Salt",
   ]);
 
   const load = page.locator("section").filter({ has: page.locator('input[value="pickup-load"]') });
-  await expect(load.getByLabel("Name")).toHaveValue("Part Seasoned Pickup Load");
+  await expect(load.getByLabel("Name")).toHaveValue("Part-Seasoned Pickup Load — Softwood");
   await expect(load.getByLabel("Price delivered in Crieff (£)")).toHaveValue("120.00");
   await expect(load.getByLabel("Unit")).toHaveValue("per load");
-  await expect(load.getByLabel("Short description")).toHaveValue(/L200 pickup bed full of logs\. Part seasoned\./);
+  await expect(load.getByLabel("Short description")).toHaveValue(/L200 pickup bed full of part-seasoned softwood logs\./);
   await expect(load.getByLabel("Size (optional)")).toHaveValue("");
   await expect(load.getByLabel("Available to order online")).toBeChecked();
   await expect(load.getByLabel("Photo (optional)")).toHaveValue("/images/pickup-load.jpg");
 
   const bulk = page.locator("section").filter({ has: page.locator('input[value="bulk-bag-of-logs"]') });
-  await expect(bulk.getByLabel("Name")).toHaveValue("Part Seasoned Bulk Bag");
+  await expect(bulk.getByLabel("Name")).toHaveValue("Part-Seasoned Bulk Bag — Softwood");
   await expect(bulk.getByLabel("Price delivered in Crieff (£)")).toHaveValue("80.00");
   await expect(bulk.getByLabel("Unit")).toHaveValue("per bag");
   await expect(bulk.getByLabel("Photo (optional)")).toHaveValue("/images/bulk-bag-of-logs.jpg");
@@ -194,14 +196,14 @@ test("owner can edit the Pickup Load price and availability; site and checkout f
   const load = page.locator("section").filter({ has: page.locator('input[value="pickup-load"]') });
   const save = async () => {
     await load.getByRole("button", { name: /Save/ }).click();
-    await expect(load.getByText("Saved Part Seasoned Pickup Load.")).toBeVisible();
+    await expect(load.getByText("Saved Part-Seasoned Pickup Load — Softwood.")).toBeVisible();
   };
   try {
     await page.goto("/admin/products");
     await load.getByLabel("Price delivered in Crieff (£)").fill("125");
     await save();
     await page.goto("/shop");
-    const card = page.locator("article").filter({ has: page.getByRole("heading", { name: "Part Seasoned Pickup Load", exact: true }) });
+    const card = page.locator("article").filter({ has: page.getByRole("heading", { name: "Part-Seasoned Pickup Loads", exact: true }) });
     await expect(card.getByText("£125", { exact: true }).first()).toBeVisible();
 
     await page.goto("/admin/products");
@@ -209,7 +211,7 @@ test("owner can edit the Pickup Load price and availability; site and checkout f
     await save();
     await page.goto("/shop");
     await expect(page.locator("article")).toHaveCount(6);
-    await expect(page.getByRole("heading", { name: "Part Seasoned Pickup Load", exact: true })).toHaveCount(0);
+    await expect(page.getByRole("heading", { name: "Part-Seasoned Pickup Loads", exact: true })).toHaveCount(0);
   } finally {
     await sql("update products set price_pence = 12000, active = true where id = 'pickup-load'");
     await page.goto("/admin/products");
@@ -219,7 +221,7 @@ test("owner can edit the Pickup Load price and availability; site and checkout f
   await expect(
     page
       .locator("article")
-      .filter({ has: page.getByRole("heading", { name: "Part Seasoned Pickup Load", exact: true }) })
+      .filter({ has: page.getByRole("heading", { name: "Part-Seasoned Pickup Loads", exact: true }) })
       .getByText("£120", { exact: true })
       .first(),
   ).toBeVisible();

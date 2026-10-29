@@ -54,19 +54,19 @@ There is **no fallback to the default prices in `config/`**. Basket and checkout
 
 ## Current products
 
-| Product                    | Price, delivered in Crieff | Size        |
-| -------------------------- | -------------------------- | ----------- |
-| Fully Seasoned Pickup Load | £160 per load              | —           |
-| Part Seasoned Pickup Load  | £120 per load              | —           |
-| Fully Seasoned Bulk Bag    | £110 per bag               | —           |
-| Part Seasoned Bulk Bag     | £80 per bag                | —           |
-| Seasoned Firewood          | £10 per bag                | —           |
-| Netted Bag of Kindling     | £7 per bag                 | 75cm × 45cm |
-| Road Salt                  | £5 per bag                 | —           |
+| Product                               | Price, delivered in Crieff | Size        |
+| ------------------------------------- | -------------------------- | ----------- |
+| Fully Seasoned Pickup Load — Softwood | £150 per load              | —           |
+| Fully Seasoned Pickup Load — Hardwood | £165 per load              | —           |
+| Fully Seasoned Bulk Bag — Softwood    | £95 per bag                | —           |
+| Fully Seasoned Bulk Bag — Hardwood    | £110 per bag               | —           |
+| Part-Seasoned Pickup Load — Softwood  | £120 per load              | —           |
+| Part-Seasoned Bulk Bag — Softwood     | £80 per bag                | —           |
+| Seasoned Firewood                     | £10 per bag                | —           |
+| Netted Bag of Kindling                | £7 per bag                 | 75cm × 45cm |
+| Road Salt                             | £5 per bag                 | —           |
 
-The **Part Seasoned Pickup Load** is an L200 pickup bed full of part-seasoned logs (about 1½ bulk bags): a loose load, not bagged, stacked when delivered, at £120. The **Fully Seasoned Pickup Load** is the same load of fully seasoned logs at £160. Both use the existing photo `public/images/pickup-load.jpg` and the same basket, checkout and delivery rules. The original product id is still `pickup-load`.
-
-The **Part Seasoned Bulk Bag** is £80 per bag. The **Fully Seasoned Bulk Bag** is £110 per bag. No bag volume, log size, species or moisture figure is published, because none has been supplied. Both use the existing photo `public/images/bulk-bag-of-logs.jpg`.
+Fully seasoned firewood is shown first: pickup loads (softwood £150, hardwood £165), then bulk bags (softwood £95, hardwood £110). Part-seasoned firewood is a separate section underneath and is softwood only: pickup loads £120, bulk bags £80. A pickup load is an L200 bed of loose logs, stacked on delivery. It is not described as a number of bulk bags. Photos stay `public/images/pickup-load.jpg` and `public/images/bulk-bag-of-logs.jpg`. The original ids `pickup-load`, `bulk-bag-of-logs`, `fully-seasoned-pickup-load` and `fully-seasoned-bulk-bag` are kept so existing baskets and orders still resolve. `fully-seasoned-pickup-load` is now the softwood load. `fully-seasoned-bulk-bag` is now the hardwood bag.
 
 Prices **include delivery within Crieff**. Outside Crieff a small delivery charge may apply — it's left blank ("to be confirmed") until the owner sets it in `/admin/delivery`. All delivery wording lives in `DELIVERY_COPY` in `config/business.ts`.
 
