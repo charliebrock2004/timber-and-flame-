@@ -154,7 +154,7 @@ test("mobile: basket with a Pickup Load has no overflow and clear wording", asyn
   await page.goto("/shop");
   await page.evaluate(() => localStorage.setItem("tf-basket-v1", JSON.stringify({ "pickup-load": 2, kindling: 1 })));
   await page.goto("/basket");
-  await expect(page.getByText("2 × £120.00 = £240.00")).toBeVisible();
+  await expect(page.getByText("2 × £95.00 = £190.00")).toBeVisible();
   await expect(page.getByText("Subtotal (3 items)")).toBeVisible();
   await assertNoHorizontalScroll(page, "basket with pickup load");
   await assertTapTargets(page, "basket with pickup load");

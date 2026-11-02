@@ -57,16 +57,16 @@ There is **no fallback to the default prices in `config/`**. Basket and checkout
 | Product                               | Price, delivered in Crieff | Size        |
 | ------------------------------------- | -------------------------- | ----------- |
 | Fully Seasoned Pickup Load — Softwood | £150 per load              | —           |
-| Fully Seasoned Pickup Load — Hardwood | £165 per load              | —           |
-| Fully Seasoned Bulk Bag — Softwood    | £95 per bag                | —           |
-| Fully Seasoned Bulk Bag — Hardwood    | £110 per bag               | —           |
-| Part-Seasoned Pickup Load — Softwood  | £120 per load              | —           |
-| Part-Seasoned Bulk Bag — Softwood     | £80 per bag                | —           |
+| Fully Seasoned Pickup Load — Hardwood | £180 per load              | —           |
+| Fully Seasoned Bulk Bag — Softwood    | £110 per bag               | —           |
+| Fully Seasoned Bulk Bag — Hardwood    | £130 per bag               | —           |
+| Part-Seasoned Pickup Load — Softwood  | £95 per load               | —           |
+| Part-Seasoned Bulk Bag — Softwood     | £65 per bag                | —           |
 | Seasoned Firewood                     | £10 per bag                | —           |
 | Netted Bag of Kindling                | £7 per bag                 | 75cm × 45cm |
 | Road Salt                             | £5 per bag                 | —           |
 
-Fully seasoned firewood is shown first: pickup loads (softwood £150, hardwood £165), then bulk bags (softwood £95, hardwood £110). Part-seasoned firewood is a separate section underneath and is softwood only: pickup loads £120, bulk bags £80. A pickup load is an L200 bed of loose logs, stacked on delivery. It is not described as a number of bulk bags. Photos stay `public/images/pickup-load.jpg` and `public/images/bulk-bag-of-logs.jpg`. The original ids `pickup-load`, `bulk-bag-of-logs`, `fully-seasoned-pickup-load` and `fully-seasoned-bulk-bag` are kept so existing baskets and orders still resolve. `fully-seasoned-pickup-load` is now the softwood load. `fully-seasoned-bulk-bag` is now the hardwood bag.
+Fully seasoned firewood is shown first: pickup loads (softwood £150, hardwood £180), then bulk bags (softwood £110, hardwood £130). Part-seasoned firewood is a separate section underneath and is softwood only: pickup loads £95, bulk bags £65. Pickup loads are marked Best Value on the product photo. A pickup load is an L200 bed of loose logs, stacked on delivery. It is not described as a number of bulk bags. Photos stay `public/images/pickup-load.jpg` and `public/images/bulk-bag-of-logs.jpg`. The original ids `pickup-load`, `bulk-bag-of-logs`, `fully-seasoned-pickup-load` and `fully-seasoned-bulk-bag` are kept so existing baskets and orders still resolve. `fully-seasoned-pickup-load` is now the softwood load. `fully-seasoned-bulk-bag` is now the hardwood bag.
 
 Prices **include delivery within Crieff**. Outside Crieff a small delivery charge may apply — it's left blank ("to be confirmed") until the owner sets it in `/admin/delivery`. All delivery wording lives in `DELIVERY_COPY` in `config/business.ts`.
 
@@ -89,7 +89,7 @@ The honesty stand photographs are the supplied photo of the Crieff stand (`publi
 
 ## How ordering works (no online payment yet)
 
-1. **Shop** — customer picks items; each card shows e.g. `£10 per bag` (or `£120 per load`), `Delivery included in Crieff` and a live `3 × £10 = £30`.
+1. **Shop** — customer picks items; each card shows e.g. `£10 per bag` (or `£95 per load`), `Delivery included in Crieff` and a live `3 × £10 = £30`.
 2. **Basket** (`/basket`) — change quantities, remove items, and check a postcode: _"Crieff — delivery included"_ or _"Small delivery charge may apply — we'll confirm this with you."_
 3. **Checkout** (`/checkout`) — three short steps: _Your details_ (name, phone, email) → _Delivery details_ (postcode first, then address) → _Review your order_ → **Place order**. Browser Back moves between steps; typed details are kept for the session.
 4. **Server** (`/api/checkout`) validates everything, re-prices from the database, works out the delivery zone from the postcode, saves the order as **New / Awaiting payment**, generates an order number (`TF-XXXXXX`) and emails the business + customer.

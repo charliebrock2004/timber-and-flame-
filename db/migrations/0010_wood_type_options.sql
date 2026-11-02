@@ -5,7 +5,7 @@
 -- would otherwise put the previous names and prices back.
 -- Existing ids stay so past orders and baskets still resolve:
 --   fully-seasoned-pickup-load  → fully seasoned pickup, softwood, £150
---   fully-seasoned-bulk-bag     → fully seasoned bulk bag, hardwood, £110
+--   fully-seasoned-bulk-bag     → fully seasoned bulk bag, hardwood, £130
 
 UPDATE "products" SET
   "name" = 'Fully Seasoned Pickup Load — Softwood',
@@ -24,7 +24,7 @@ VALUES (
   'L200 pickup bed full of fully seasoned hardwood logs. This is a loose load, not bagged. The load is stacked when delivered.',
   'per load',
   NULL,
-  16500,
+  18000,
   '/images/pickup-load.jpg',
   'firewood',
   'red',
@@ -49,7 +49,7 @@ VALUES (
   'Fully seasoned softwood logs supplied in a bulk bag, for a wood burner, fireplace or fire pit.',
   'per bag',
   NULL,
-  9500,
+  11000,
   '/images/bulk-bag-of-logs.jpg',
   'firewood',
   'green',
@@ -71,7 +71,7 @@ UPDATE "products" SET
   "name" = 'Fully Seasoned Bulk Bag — Hardwood',
   "short_description" = 'Fully seasoned hardwood logs supplied in a bulk bag, for a wood burner, fireplace or fire pit.',
   "unit_label" = 'per bag',
-  "price_pence" = 11000,
+  "price_pence" = 13000,
   "sort_order" = 4,
   "active" = true,
   "updated_at" = now()
@@ -81,7 +81,7 @@ UPDATE "products" SET
   "name" = 'Part-Seasoned Pickup Load — Softwood',
   "short_description" = 'L200 pickup bed full of part-seasoned softwood logs. This is a loose load, not bagged. The load is stacked when delivered.',
   "unit_label" = 'per load',
-  "price_pence" = 12000,
+  "price_pence" = 9500,
   "sort_order" = 5,
   "active" = true,
   "updated_at" = now()
@@ -91,7 +91,7 @@ UPDATE "products" SET
   "name" = 'Part-Seasoned Bulk Bag — Softwood',
   "short_description" = 'Part-seasoned softwood logs supplied in a bulk bag, for a wood burner, fireplace or fire pit.',
   "unit_label" = 'per bag',
-  "price_pence" = 8000,
+  "price_pence" = 6500,
   "sort_order" = 6,
   "active" = true,
   "updated_at" = now()

@@ -41,7 +41,7 @@ export const DEFAULT_PRODUCTS = [
       "L200 pickup bed full of fully seasoned hardwood logs. This is a loose load, not bagged. The load is stacked when delivered.",
     unitLabel: "per load",
     sizeLabel: null as string | null,
-    pricePence: 16500,
+    pricePence: 18000,
     image: "/images/pickup-load.jpg" as string | null,
     visual: "firewood" as ProductVisual,
     accent: "red",
@@ -54,7 +54,7 @@ export const DEFAULT_PRODUCTS = [
     shortDescription: "Fully seasoned softwood logs supplied in a bulk bag, for a wood burner, fireplace or fire pit.",
     unitLabel: "per bag",
     sizeLabel: null as string | null,
-    pricePence: 9500,
+    pricePence: 11000,
     image: "/images/bulk-bag-of-logs.jpg" as string | null,
     visual: "firewood" as ProductVisual,
     accent: "green",
@@ -67,7 +67,7 @@ export const DEFAULT_PRODUCTS = [
     shortDescription: "Fully seasoned hardwood logs supplied in a bulk bag, for a wood burner, fireplace or fire pit.",
     unitLabel: "per bag",
     sizeLabel: null as string | null,
-    pricePence: 11000,
+    pricePence: 13000,
     image: "/images/bulk-bag-of-logs.jpg" as string | null,
     visual: "firewood" as ProductVisual,
     accent: "green",
@@ -81,7 +81,7 @@ export const DEFAULT_PRODUCTS = [
       "L200 pickup bed full of part-seasoned softwood logs. This is a loose load, not bagged. The load is stacked when delivered.",
     unitLabel: "per load",
     sizeLabel: null as string | null,
-    pricePence: 12000,
+    pricePence: 9500,
     image: "/images/pickup-load.jpg" as string | null,
     visual: "firewood" as ProductVisual,
     accent: "red",
@@ -94,7 +94,7 @@ export const DEFAULT_PRODUCTS = [
     shortDescription: "Part-seasoned softwood logs supplied in a bulk bag, for a wood burner, fireplace or fire pit.",
     unitLabel: "per bag",
     sizeLabel: null as string | null,
-    pricePence: 8000,
+    pricePence: 6500,
     image: "/images/bulk-bag-of-logs.jpg" as string | null,
     visual: "firewood" as ProductVisual,
     accent: "green",
@@ -184,6 +184,9 @@ export const FIREWOOD_SECTIONS = [
     ],
   },
 ] as const;
+
+/** Pickup loads that show a Best Value banner on the product photo. Bulk bags are not included. */
+export const BEST_VALUE_PRODUCT_IDS = new Set(["fully-seasoned-pickup-load", "fully-seasoned-pickup-hardwood", "pickup-load"]);
 
 /** Button label for each firewood option. Part-seasoned says so explicitly. */
 export const WOOD_OPTION_LABEL: Record<string, string> = {

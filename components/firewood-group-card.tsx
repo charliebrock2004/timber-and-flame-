@@ -8,6 +8,7 @@ import { CheckIcon, TruckIcon } from "./icons";
 import { basket, useBasket } from "./cart/cart-store";
 import { formatPenceShort } from "@/lib/money";
 import { DELIVERY_COPY } from "@/config/business";
+import { BEST_VALUE_PRODUCT_IDS } from "@/config/catalog";
 import type { FirewoodOption } from "@/lib/firewood-groups";
 
 const STRIPE: Record<string, string> = {
@@ -62,6 +63,11 @@ export function FirewoodGroupCard({
     <article className="group bg-cream-50 shadow-card ring-ink/5 flex flex-col overflow-hidden rounded-xl ring-1">
       <div className="bg-wood-800 relative aspect-[4/3] overflow-hidden">
         <ProductVisual image={product.image} visual={product.visual} name={product.name} priority={priority} />
+        {BEST_VALUE_PRODUCT_IDS.has(product.id) && (
+          <span className="label bg-ember-700 text-cream-50 ring-cream-100/30 pointer-events-none absolute top-2.5 left-2.5 z-10 rounded-sm px-2 py-1 text-[0.68rem] leading-none font-semibold tracking-[0.14em] whitespace-nowrap shadow-[0_2px_8px_rgba(20,18,17,0.4)] ring-1 sm:top-3 sm:left-3 sm:px-2.5 sm:py-1.5 sm:text-xs">
+            Best value
+          </span>
+        )}
       </div>
       <div className="relative flex flex-1 flex-col p-5 pl-7">
         <span className={`absolute inset-y-5 left-0 w-1.5 rounded-r ${STRIPE[product.accent] ?? "bg-ember-700"}`} aria-hidden />
