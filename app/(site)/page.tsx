@@ -5,6 +5,7 @@ import { openGraphFor } from "@/lib/seo";
 import standWide from "@/public/images/stand-wide.jpg";
 import { Logo } from "@/components/logo";
 import { ProductCatalogue } from "@/components/product-catalogue";
+import { LogStoreOffer } from "@/components/log-store-offer";
 import { DeliveryCards, Eyebrow, FinalCta, HonestyStandSection } from "@/components/sections";
 import { FlameIcon, PhoneIcon, PinIcon, TagIcon, TruckIcon } from "@/components/icons";
 import { getActiveProducts, getDeliveryZones, getSettings } from "@/lib/catalog";
@@ -102,6 +103,8 @@ export default async function HomePage() {
           <span className="text-ember-200 text-sm">{DELIVERY_COPY.outside}</span>
         </p>
       </div>
+
+      <LogStoreOffer />
 
       {/* PRODUCTS */}
       <section aria-labelledby="products-heading" className="container-site py-14 md:py-20">

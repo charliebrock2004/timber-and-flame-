@@ -33,7 +33,17 @@ export default async function ContactPage() {
       </section>
 
       <section className="container-site grid gap-8 py-12 md:grid-cols-2 md:py-16">
-        <div className="bg-cream-50 shadow-card ring-ink/5 rounded-xl p-6 ring-1 md:p-8">
+        <div id="enquire" className="bg-cream-50 shadow-card ring-ink/5 scroll-mt-28 rounded-xl p-6 ring-1 md:p-8">
+          <div className="border-ember-700/15 bg-cream-100 mb-6 rounded-lg border px-4 py-3">
+            <p className="label text-ember-700 text-sm">Handmade log store</p>
+            <p className="mt-1">
+              Asking about the limited-time log store and firewood package? Call or email and mention it. The package is{" "}
+              <strong>£400</strong>, down from £500.
+            </p>
+            <Link href="/#log-store-offer" className="text-ember-700 mt-2 inline-block font-semibold underline underline-offset-4">
+              See the offer
+            </Link>
+          </div>
           <h2 className="label text-2xl font-semibold tracking-wider">{BRAND.name}</h2>
           <p className="text-ink-soft mt-2 flex items-center gap-2">
             <PinIcon className="text-ember-700 h-5 w-5" />

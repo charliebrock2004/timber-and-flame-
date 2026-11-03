@@ -1,6 +1,7 @@
 import { Header } from "@/components/header";
 import { Footer } from "@/components/footer";
 import { MobileActionBar } from "@/components/mobile-action-bar";
+import { PromoBanner } from "@/components/promo-banner";
 import { getActiveProducts, getSettings, type PublicSettings } from "@/lib/catalog";
 import { jsonLdScript, localBusinessJsonLd } from "@/lib/seo";
 import { DEFAULT_SETTINGS } from "@/config/business";
@@ -23,6 +24,7 @@ export default async function SiteLayout({ children }: LayoutProps<"/">) {
       >
         Skip to content
       </a>
+      <PromoBanner />
       {settings.announcement && (
         <div className="bg-ember-700 px-4 py-2 text-center text-sm font-semibold text-white">{settings.announcement}</div>
       )}
