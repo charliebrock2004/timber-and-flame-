@@ -1,5 +1,4 @@
 import Image from "next/image";
-import Link from "next/link";
 import logStore from "@/public/images/log-store.jpg";
 import { Eyebrow } from "./sections";
 
@@ -65,10 +64,10 @@ export function LogStoreOffer() {
           </div>
 
           <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center">
-            <Link href="/contact#enquire" className="btn btn-primary px-8 text-lg">
+            <a href="tel:07940554342" className="btn btn-primary px-8 text-lg">
               Enquire now
-            </Link>
-            <p className="text-ink-soft text-sm sm:max-w-[14rem]">Call or email us from the contact page. This offer is enquiry only.</p>
+            </a>
+            <p className="text-ink-soft text-sm sm:max-w-[14rem]">Call 07940 554342. This offer is enquiry only.</p>
           </div>
         </div>
       </div>
