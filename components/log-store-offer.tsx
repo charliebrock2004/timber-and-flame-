@@ -8,6 +8,12 @@ const INCLUDED = [
   "A complete ready-to-use package for storing firewood in the garden.",
 ];
 
+const DIMENSIONS = [
+  { label: "Height", value: "126.2 cm" },
+  { label: "Width", value: "180 cm" },
+  { label: "Depth", value: "82.3 cm" },
+];
+
 export function LogStoreOffer() {
   return (
     <section
@@ -47,6 +53,23 @@ export function LogStoreOffer() {
               </li>
             ))}
           </ul>
+
+          <div className="border-ink/10 mt-7 border-t pt-6">
+            <h3 id="log-store-dimensions" className="label text-ember-700 text-sm">
+              Product Dimensions
+            </h3>
+            <p className="text-ink mt-2 text-lg font-semibold">
+              126.2 cm × 180 cm × 82.3 cm <span className="text-ink-soft text-base font-normal">(H × W × D)</span>
+            </p>
+            <dl aria-labelledby="log-store-dimensions" className="mt-3 grid grid-cols-3 gap-2 sm:max-w-md sm:gap-3">
+              {DIMENSIONS.map(({ label, value }) => (
+                <div key={label} className="ring-ink/10 rounded-lg bg-white/60 px-2.5 py-2.5 ring-1 sm:px-3">
+                  <dt className="label text-ink-soft text-xs">{label}</dt>
+                  <dd className="font-display mt-1 text-lg leading-tight font-bold whitespace-nowrap sm:text-xl">{value}</dd>
+                </div>
+              ))}
+            </dl>
+          </div>
 
           <div className="border-ink/10 mt-7 border-t pt-6">
             <p className="sr-only">Original price £500. Promotional price £400. Save £100, which is 20% off.</p>
